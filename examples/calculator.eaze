@@ -1,0 +1,34 @@
+# Simple Calculator - Basic Arithmetic
+
+define add(a, b)
+  return a + b
+end
+
+define subtract(a, b)
+  return a - b
+end
+
+define multiply(a, b)
+  return a * b
+end
+
+define divide(a, b)
+  return a / b
+end
+
+show "=== Eaze Calculator ==="
+
+set x to 10
+set y to 5
+
+show "10 + 5 = "
+show call add(10, 5)
+
+show "10 - 5 = "
+show call subtract(10, 5)
+
+show "10 * 5 = "
+show call multiply(10, 5)
+
+show "10 / 5 = "
+show call divide(10, 5)

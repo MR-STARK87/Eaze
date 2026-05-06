@@ -1,0 +1,18 @@
+# Fibonacci Sequence Generator
+# This program generates and displays the first N Fibonacci numbers
+
+ask "How many Fibonacci numbers?" into n
+set count to 0
+set a to 0
+set b to 1
+
+show "Fibonacci Sequence:"
+
+repeat n times
+  show a
+  set temp to a + b
+  set a to b
+  set b to temp
+end
+
+show "Done!"

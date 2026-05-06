@@ -1,0 +1,33 @@
+# Number Guessing Game
+# Try to guess the secret number!
+
+show "=== Welcome to Eaze Guessing Game ==="
+show ""
+show "I'm thinking of a number between 1 and 100"
+show ""
+
+set secret to 42
+set guesses to 0
+set found to 0
+
+while found == 0
+  ask "What's your guess?" into guess
+  set guesses to guesses + 1
+
+  if guess == secret
+    show "🎉 You got it! That's the right number!"
+    set found to 1
+  else
+    if guess < secret
+      show "📈 Too low! Try a higher number"
+    else
+      show "📉 Too high! Try a lower number"
+    end
+  end
+end
+
+show ""
+show "Congratulations!"
+show "You found it in:"
+show guesses
+show "guesses"

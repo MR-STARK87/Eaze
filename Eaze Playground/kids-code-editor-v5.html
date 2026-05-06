@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script>(function(){
+  function makeStore(){
+    var data = {};
+    var api = {
+      getItem: function(k){ return Object.prototype.hasOwnProperty.call(data, k) ? data[k] : null; },
+      setItem: function(k, v){ data[k] = String(v); },
+      removeItem: function(k){ delete data[k]; },
+      clear: function(){ data = {}; },
+      key: function(i){ return Object.keys(data)[i] || null; }
+    };
+    Object.defineProperty(api, 'length', { get: function(){ return Object.keys(data).length; } });
+    return api;
+  }
+  function tryShim(name){
+    var works = false;
+    try { works = !!window[name] && typeof window[name].getItem === 'function'; void window[name].length; }
+    catch (_) { works = false; }
+    if (works) return;
+    try { Object.defineProperty(window, name, { configurable: true, value: makeStore() }); }
+    catch (_) { try { window[name] = makeStore(); } catch (__) {} }
+  }
+  tryShim('localStorage');
+  tryShim('sessionStorage');
+})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eaze Playground — Kids Code Editor (Enhanced)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Theme Variables */
+            --bg: oklch(98% 0.01 280);
+            --surface: oklch(100% 0 0);
+            --fg: oklch(25% 0.02 280);
+            --muted: oklch(60% 0.02 280);
+            --border: oklch(92% 0.01 280);
+
+            --lavender: oklch(88% 0.08 300);
+            --mint: oklch(92% 0.08 160);
+            --peach: oklch(90% 0.08 40);
+            --sky: oklch(90% 0.06 220);
+
+            --accent: var(--lavender);
+            --accent-fg: oklch(40% 0.15 300);
+
+            --font-ui: "DM Sans", system-ui, sans-serif;
+            --font-mono: "JetBrains Mono", monospace;
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+
+            --shadow-sm: 0 2px 8px oklch(0% 0 0 / 0.04);
+            --shadow-md: 0 4px 16px oklch(0% 0 0 / 0.08);
+
+            /* Syntax */
+            --syn-keyword: oklch(65% 0.15 300);
+            --syn-string: oklch(70% 0.15 160);
+            --syn-number: oklch(70% 0.15 40);
+            --syn-comment: var(--muted);
+            --syn-function: oklch(65% 0.12 220);
+
+            --sidebar-width: 240px;
+            --sidebar-collapsed-width: 64px;
+        }
+
+        [data-theme="dark"] {
+            --bg: oklch(18% 0.01 280);
+            --surface: oklch(22% 0.02 280);
+            --fg: oklch(95% 0.01 280);
+            --muted: oklch(60% 0.02 280);
+            --border: oklch(30% 0.02 280);
+            --accent-fg: oklch(90% 0.05 300);
+            --shadow-sm: 0 2px 8px oklch(0% 0 0 / 0.2);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-ui); background-color: var(--bg); color: var(--fg); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+        /* --- Layout --- */
+        .toolbar { height: 64px; display: flex; align-items: center; padding: 0 20px; background: var(--surface); border-bottom: 1px solid var(--border); z-index: 100; gap: 12px; }
+        .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 18px; color: var(--accent-fg); }
+        .logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+        .actions { display: flex; gap: 6px; margin-left: auto; }
+        .btn { height: 36px; padding: 0 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--fg); font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn:hover { background: var(--bg); border-color: var(--muted); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: var(--mint); border-color: transparent; color: oklch(30% 0.1 160); }
+        .btn-ai { background: var(--lavender); border-color: transparent; color: oklch(30% 0.1 300); }
+
+        .save-indicator { position: fixed; bottom: 20px; right: 20px; padding: 12px 16px; background: var(--mint); color: oklch(30% 0.1 160); border-radius: 20px; font-size: 12px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; }
+        .save-indicator.show { opacity: 1; }
+
+        .app-shell { display: flex; flex: 1; overflow: hidden; }
+
+        /* --- Sidebar (Rail Style) --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+
+        .sidebar-header {
+            padding: 20px 20px 12px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .sidebar.collapsed .sidebar-header span { display: none; }
+        .sidebar.collapsed .sidebar-header { padding: 20px 0; justify-content: center; }
+
+        .file-list { flex: 1; padding: 0 8px; overflow-y: auto; overflow-x: hidden; }
+        .file-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2px;
+            color: var(--muted);
+            transition: background 0.2s, color 0.2s;
+        }
+        .file-item:hover { background: var(--bg); color: var(--fg); }
+        .file-item.active { background: var(--bg); color: var(--fg); font-weight: 700; box-shadow: 3px 0 0 var(--accent) inset; }
+
+        .file-icon { font-size: 18px; flex-shrink: 0; width: 24px; text-align: center; }
+        .file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sidebar.collapsed .file-name { display: none; }
+        .sidebar.collapsed .file-item { justify-content: center; padding: 10px 0; }
+
+        .sidebar-toggle {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+        .sidebar.collapsed .sidebar-toggle { transform: translateX(-50%) rotate(180deg); }
+
+        /* --- Main Workspace --- */
+        .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+        .blocks-bar {
+            height: 52px; display: flex; align-items: center; padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--border); gap: 8px; overflow-x: auto;
+        }
+        .blocks-bar::-webkit-scrollbar { display: none; }
+        .chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: transform 0.2s, filter 0.2s; }
+        .chip:hover { transform: translateY(-1px); filter: brightness(0.95); }
+        .chip.say { background: var(--lavender); color: oklch(30% 0.1 300); }
+        .chip.set { background: var(--mint); color: oklch(30% 0.1 160); }
+        .chip.if  { background: var(--peach); color: oklch(30% 0.1 40); }
+        .chip.loop { background: var(--sky); color: oklch(30% 0.1 220); }
+
+        .workspace { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 12px; overflow: hidden; position: relative; }
+
+        .panel { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-sm); }
+
+        .editor-panel { flex: 1; min-height: 100px; }
+
+        .panel-header { padding: 8px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); z-index: 5; }
+        .panel-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.08em; }
+
+        .editor-area { flex: 1; display: flex; position: relative; overflow: hidden; }
+        .gutter { width: 44px; background: var(--bg); border-right: 1px solid var(--border); padding: 20px 0; display: flex; flex-direction: column; align-items: center; font-family: var(--font-mono); font-size: 14px; color: var(--muted); user-select: none; }
+
+        .scroll-container { flex: 1; position: relative; overflow: auto; }
+        .editor-textarea, .editor-pre { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 20px; font-family: var(--font-mono); font-size: 15px; line-height: 1.6; white-space: pre; word-wrap: normal; border: none; outline: none; }
+        .editor-textarea { background: transparent; color: transparent; caret-color: var(--fg); resize: none; z-index: 1; }
+        .editor-pre { pointer-events: none; z-index: 0; color: var(--fg); }
+
+        /* --- Resizer --- */
+        .resizer { height: 6px; cursor: ns-resize; margin: -3px 0; z-index: 10; border-radius: 3px; }
+        .resizer:hover { background: var(--accent); }
+
+        /* --- Console Panel --- */
+        .console-panel { height: 220px; min-height: 120px; }
+        .console-panel.fullscreen { position: absolute; inset: 12px; height: calc(100% - 24px) !important; z-index: 200; width: calc(100% - 24px); }
+
+        .tabs { display: flex; gap: 4px; }
+        .tab { padding: 6px 12px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; border-radius: 6px; transition: 0.2s; }
+        .tab.active { color: var(--fg); background: var(--bg); }
+        .tab-content { flex: 1; padding: 16px; font-family: var(--font-mono); font-size: 14px; overflow-y: auto; background: var(--surface); }
+        .console-line { margin-bottom: 6px; display: flex; gap: 8px; }
+        .console-line::before { content: ">"; color: var(--mint); font-weight: 800; }
+
+        /* --- AI Companion --- */
+        .ai-panel { width: 320px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; right: 0; top: 64px; bottom: 0; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 300; }
+        .ai-panel.open { transform: translateX(0); }
+        .ai-chat { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .msg { padding: 12px 16px; border-radius: 16px; font-size: 13.5px; line-height: 1.5; max-width: 85%; }
+        .msg-bot { background: var(--lavender); color: oklch(25% 0.1 300); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg-user { background: var(--bg); border: 1px solid var(--border); align-self: flex-end; border-bottom-right-radius: 4px; }
+        .ai-footer { padding: 12px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+        .ai-input { flex: 1; height: 38px; border-radius: 19px; border: 1px solid var(--border); padding: 0 16px; font-size: 13px; outline: none; background: var(--bg); }
+
+        /* --- Syntax Tokens --- */
+        .token.keyword { color: var(--syn-keyword); font-weight: 800; }
+        .token.string  { color: var(--syn-string); }
+        .token.number  { color: var(--syn-number); }
+        .token.comment { color: var(--syn-comment); }
+        .token.fn      { color: var(--syn-function); font-weight: 700; }
+
+        /* --- Modals --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal { background: var(--surface); width: 90%; max-width: 600px; border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-md); max-height: 90vh; overflow-y: auto; }
+
+        /* --- Settings Panel Styles --- */
+        .settings-section { margin-bottom: 24px; }
+        .settings-section:last-child { margin-bottom: 0; }
+        .settings-title { font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 12px; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg); border-radius: var(--radius-md); margin-bottom: 8px; }
+        .settings-row:last-child { margin-bottom: 0; }
+        .settings-label { font-size: 14px; font-weight: 500; }
+        .settings-value { display: flex; align-items: center; gap: 8px; }
+
+        /* Toggle Switch */
+        .toggle-switch { position: relative; display: inline-block; width: 48px; height: 28px; }
+        .toggle-switch input { display: none; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: 0.3s; border-radius: 14px; }
+        .toggle-slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: var(--surface); transition: 0.3s; border-radius: 50%; }
+        input:checked + .toggle-slider { background-color: var(--mint); }
+        input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+        /* Range Slider */
+        .range-slider { width: 140px; }
+        input[type="range"] { width: 100%; height: 6px; border-radius: 3px; background: var(--border); outline: none; -webkit-appearance: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--mint); cursor: pointer; transition: 0.2s; }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--mint); cursor: pointer; border: none; transition: 0.2s; }
+
+        /* Select Dropdown */
+        select { padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--fg); font-family: inherit; font-size: 13px; cursor: pointer; }
+
+        /* Color Swatches */
+        .color-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+        .swatch { width: 40px; height: 40px; border-radius: var(--radius-md); cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .swatch:hover { transform: scale(1.1); }
+        .swatch.active { border-color: var(--fg); box-shadow: 0 0 8px var(--fg); }
+
+        /* Keyboard Shortcuts Table */
+        .shortcuts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .shortcut-item { padding: 12px; background: var(--bg); border-radius: var(--radius-md); font-size: 13px; }
+        .shortcut-key { font-family: var(--font-mono); font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+        .shortcut-desc { color: var(--muted); font-size: 12px; }
+
+        /* Modal Close Button */
+        .modal-close { position: absolute; top: 16px; right: 16px; width: 28px; height: 28px; border: none; background: var(--bg); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--muted); transition: 0.2s; }
+        .modal-close:hover { background: var(--border); color: var(--fg); }
+
+        /* Modal Header */
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; position: relative; }
+        .modal-title { font-size: 18px; font-weight: 800; }
+
+        /* Values Display */
+        .value-display { font-size: 13px; font-weight: 600; color: var(--accent); min-width: 40px; text-align: right; }
+    </style>
+</head>
+<body>
+
+    <header class="toolbar">
+        <div class="logo">
+            <div class="logo-icon">E</div>
+            Eaze Playground
+        </div>
+        <div class="actions">
+            <button class="btn" title="Undo (Ctrl+Z)" onclick="undo()" id="btn-undo">↩️ Undo</button>
+            <button class="btn" title="Redo (Ctrl+Y)" onclick="redo()" id="btn-redo">↪️ Redo</button>
+            <button class="btn" onclick="formatCode()" title="Format Code (Ctrl+Shift+F)">✨ Format</button>
+            <button class="btn" onclick="showModal('settings')" title="Settings">⚙️ Settings</button>
+            <button class="btn btn-ai" onclick="toggleAI()">✨ Ask AI</button>
+            <button class="btn btn-primary" onclick="runCode()">▶️ Run</button>
+        </div>
+    </header>
+
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span>Files</span>
+                <button class="btn" style="width:24px; height:24px; padding:0; border:none; background:var(--bg);" onclick="addFile()">+</button>
+            </div>
+            <div class="file-list" id="file-list"></div>
+            <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">◀</button>
+        </aside>
+
+        <main class="main">
+            <div class="blocks-bar">
+                <div class="chip say" onclick="insert('say \"Hello!\"')">say</div>
+                <div class="chip set" onclick="insert('set score to 10')">set</div>
+                <div class="chip if" onclick="insert('if score > 5 {\n    say \"Great job!\"\n}')">if / else</div>
+                <div class="chip loop" onclick="insert('repeat 5 {\n    say \"Looping!\"\n}')">repeat</div>
+            </div>
+
+            <div class="workspace" id="workspace">
+                <div class="panel editor-panel">
+                    <div class="panel-header">
+                        <span class="panel-title" id="active-filename">main.eaze</span>
+                        <span style="font-size: 10px; color: var(--muted);" id="cursor-pos">Ln 1, Col 1</span>
+                    </div>
+                    <div class="editor-area">
+                        <div class="gutter" id="gutter"></div>
+                        <div class="scroll-container">
+                            <pre class="editor-pre" id="pre-highlight"></pre>
+                            <textarea class="editor-textarea" id="main-editor" spellcheck="false" oninput="handleInput()" onkeydown="handleKey(event)" onscroll="syncScroll()"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="resizer" id="resizer"></div>
+
+                <div class="panel console-panel" id="console-panel">
+                    <div class="panel-header">
+                        <div class="tabs">
+                            <div class="tab active" onclick="switchTab('output')" id="tab-output">Output</div>
+                            <div class="tab" onclick="switchTab('variables')" id="tab-variables">Variables</div>
+                        </div>
+                        <button class="btn" style="width:28px; height:28px; padding:0;" onclick="toggleConsoleFull()" title="Fullscreen">⛶</button>
+                    </div>
+                    <div class="tab-content" id="pane-output">
+                        <div style="color: var(--muted); font-style: italic;">Program output will show here...</div>
+                    </div>
+                    <div class="tab-content" id="pane-variables" style="display: none;">
+                        <div style="color: var(--muted); font-style: italic;">No variables tracked yet.</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="ai-panel" id="ai-panel">
+            <div class="panel-header">
+                <span class="panel-title">Eaze AI Companion</span>
+                <button class="btn" style="border:none;" onclick="toggleAI()">✕</button>
+            </div>
+            <div class="ai-chat" id="ai-chat">
+                <div class="msg msg-bot">Hi! I'm your Eaze coding buddy. Ask me how to make a loop or use a variable!</div>
+            </div>
+            <form class="ai-footer" onsubmit="sendAI(event)">
+                <input type="text" class="ai-input" id="ai-input" placeholder="Ask a question..." autocomplete="off">
+                <button class="btn btn-primary" style="width:38px; height:38px; border-radius:50%; padding:0; justify-content:center;">🚀</button>
+            </form>
+        </aside>
+    </div>
+
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-title">Settings</h2>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <div class="save-indicator" id="save-indicator">✓ Saved</div>
+
+    <script>
+        const editor = document.getElementById('main-editor');
+        const pre = document.getElementById('pre-highlight');
+        const gutter = document.getElementById('gutter');
+        const fileList = document.getElementById('file-list');
+        const output = document.getElementById('pane-output');
+        const varGrid = document.getElementById('pane-variables');
+
+        // Enhanced App State with Undo/Redo
+        let appState = {
+            files: JSON.parse(localStorage.getItem('eaze_v5_files')) || [
+                { name: 'hello.eaze', content: 'say "Welcome to Eaze!"\n\nset player to "Zaid"\nsay "Hello, "\nsay player' },
+                { name: 'counter.eaze', content: 'set i to 1\nrepeat 5 {\n    say i\n    set i to i + 1\n}' }
+            ],
+            activeIdx: 0,
+            theme: localStorage.getItem('eaze_theme') || 'light',
+            fontSize: parseInt(localStorage.getItem('eaze_fontSize')) || 15,
+            fontFamily: localStorage.getItem('eaze_fontFamily') || 'JetBrains Mono',
+            showLineNumbers: localStorage.getItem('eaze_showLineNumbers') !== 'false',
+            autoSave: localStorage.getItem('eaze_autoSave') !== 'false',
+            colorTheme: localStorage.getItem('eaze_colorTheme') || 'pastel',
+            showKeyboardShortcuts: localStorage.getItem('eaze_showKeyboardShortcuts') !== 'false',
+            editHistory: [[]],
+            historyIndex: 0
+        };
+
+        let autoSaveTimer = null;
+        const AUTO_SAVE_DELAY = 1000; // 1 second debounce
+
+        // Keyboard Shortcuts Reference
+        const keyboardShortcuts = [
+            { key: 'Ctrl+Z', desc: 'Undo' },
+            { key: 'Ctrl+Y', desc: 'Redo' },
+            { key: 'Ctrl+S', desc: 'Save' },
+            { key: 'Ctrl+Shift+F', desc: 'Format Code' },
+            { key: 'Tab', desc: 'Indent' },
+            { key: 'Ctrl+/', desc: 'Comment' }
+        ];
+
+        function init() {
+            applySettings();
+            renderFiles();
+            loadActiveFile();
+            setupResizer();
+            setupKeyboardShortcuts();
+        }
+
+        function applySettings() {
+            document.body.setAttribute('data-theme', appState.theme);
+            editor.style.fontSize = appState.fontSize + 'px';
+            pre.style.fontSize = appState.fontSize + 'px';
+            editor.style.fontFamily = appState.fontFamily + ', monospace';
+            pre.style.fontFamily = appState.fontFamily + ', monospace';
+            gutter.style.display = appState.showLineNumbers ? 'flex' : 'none';
+            updateColorTheme();
+        }
+
+        function updateColorTheme() {
+            const themes = {
+                pastel: {
+                    '--syn-keyword': 'oklch(65% 0.15 300)',
+                    '--syn-string': 'oklch(70% 0.15 160)',
+                    '--syn-number': 'oklch(70% 0.15 40)',
+                },
+                vibrant: {
+                    '--syn-keyword': 'oklch(55% 0.25 300)',
+                    '--syn-string': 'oklch(60% 0.25 160)',
+                    '--syn-number': 'oklch(60% 0.25 40)',
+                },
+                cool: {
+                    '--syn-keyword': 'oklch(65% 0.15 270)',
+                    '--syn-string': 'oklch(70% 0.15 180)',
+                    '--syn-number': 'oklch(70% 0.15 220)',
+                },
+                warm: {
+                    '--syn-keyword': 'oklch(65% 0.15 30)',
+                    '--syn-string': 'oklch(70% 0.15 60)',
+                    '--syn-number': 'oklch(70% 0.15 0)',
+                }
+            };
+            const theme = themes[appState.colorTheme] || themes.pastel;
+            Object.entries(theme).forEach(([key, value]) => {
+                document.documentElement.style.setProperty(key, value);
+            });
+            updateEditor();
+        }
+
+        function renderFiles() {
+            fileList.innerHTML = appState.files.map((f, i) => `
+                <div class="file-item ${i === appState.activeIdx ? 'active' : ''}" onclick="switchFile(${i})" title="${f.name}">
+                    <span class="file-icon">📄</span>
+                    <span class="file-name">${f.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function switchFile(idx) {
+            appState.files[appState.activeIdx].content = editor.value;
+            appState.activeIdx = idx;
+            appState.editHistory = [appState.files[idx].content.split('\n')];
+            appState.historyIndex = 0;
+            loadActiveFile();
+            renderFiles();
+        }
+
+        function loadActiveFile() {
+            editor.value = appState.files[appState.activeIdx].content;
+            document.getElementById('active-filename').innerText = appState.files[appState.activeIdx].name;
+            updateEditor();
+        }
+
+        function addFile() {
+            const name = prompt("Enter file name:", "my-code.eaze");
+            if(name) {
+                const safeName = name.endsWith('.eaze') ? name : name + '.eaze';
+                appState.files.push({ name: safeName, content: '' });
+                switchFile(appState.files.length - 1);
+            }
+        }
+
+        function handleInput() {
+            updateEditor();
+            debouncedAutoSave();
+            updateUndoRedoButtons();
+        }
+
+        function debouncedAutoSave() {
+            if (appState.autoSave) {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = setTimeout(() => {
+                    saveCode();
+                }, AUTO_SAVE_DELAY);
+            }
+        }
+
+        function saveCode() {
+            appState.files[appState.activeIdx].content = editor.value;
+            localStorage.setItem('eaze_v5_files', JSON.stringify(appState.files));
+            showSaveIndicator();
+        }
+
+        function showSaveIndicator() {
+            const indicator = document.getElementById('save-indicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        function updateEditor() {
+            let code = editor.value;
+            if(code[code.length-1] === "\n") code += " ";
+
+            const highlighted = code
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/\b(say|set|to|if|else|repeat|while|define|call)\b/g, '<span class="token keyword">$1</span>')
+                .replace(/\"(.*?)\"/g, '<span class="token string">\"$1\"</span>')
+                .replace(/\b(\d+)\b/g, '<span class="token number">$1</span>')
+                .replace(/\/\/(.*)/g, '<span class="token comment">//$1</span>')
+                .replace(/\b([a-zA-Z_]\w*)(?=\s*\{)/g, '<span class="token fn">$1</span>');
+
+            pre.innerHTML = highlighted;
+
+            const lineCount = editor.value.split('\n').length;
+            gutter.innerHTML = Array.from({length: lineCount}, (_, i) => `<div style="height:24px">${i+1}</div>`).join('');
+
+            const cur = editor.value.substring(0, editor.selectionStart).split('\n');
+            document.getElementById('cursor-pos').innerText = `Ln ${cur.length}, Col ${cur[cur.length-1].length + 1}`;
+        }
+
+        function handleKey(e) {
+            // Tab indentation
+            if(e.key === 'Tab') {
+                e.preventDefault();
+                const start = editor.selectionStart;
+                editor.value = editor.value.substring(0, start) + "    " + editor.value.substring(editor.selectionEnd);
+                editor.selectionStart = editor.selectionEnd = start + 4;
+                updateEditor();
+                return;
+            }
+
+            // Keyboard shortcuts
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key.toLowerCase()) {
+                    case 'z':
+                        e.preventDefault();
+                        undo();
+                        break;
+                    case 'y':
+                        e.preventDefault();
+                        redo();
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        saveCode();
+                        break;
+                }
+            }
+
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f') {
+                e.preventDefault();
+                formatCode();
+            }
+
+            // Comment with Ctrl+/
+            if (e.ctrlKey && e.key === '/') {
+                e.preventDefault();
+                toggleComment();
+            }
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', handleGlobalKeys);
+        }
+
+        function handleGlobalKeys(e) {
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f' && document.getElementById('modal-overlay').style.display === 'none') {
+                e.preventDefault();
+                formatCode();
+            }
+        }
+
+        function syncScroll() {
+            pre.scrollTop = gutter.scrollTop = editor.scrollTop;
+            pre.scrollLeft = editor.scrollLeft;
+        }
+
+        function insert(snippet) {
+            const start = editor.selectionStart;
+            editor.value = editor.value.substring(0, start) + snippet + editor.value.substring(editor.selectionEnd);
+            editor.selectionStart = editor.selectionEnd = start + snippet.length;
+            editor.focus();
+            updateEditor();
+            handleInput();
+        }
+
+        // Undo/Redo Functions
+        function undo() {
+            if (appState.historyIndex > 0) {
+                appState.historyIndex--;
+                const historyItem = appState.editHistory[appState.historyIndex];
+                editor.value = historyItem.join('\n');
+                updateEditor();
+                updateUndoRedoButtons();
+            }
+        }
+
+        function redo() {
+            if (appState.historyIndex < appState.editHistory.length - 1) {
+                appState.historyIndex++;
+                const historyItem = appState.editHistory[appState.historyIndex];
+                editor.value = historyItem.join('\n');
+                updateEditor();
+                updateUndoRedoButtons();
+            }
+        }
+
+        function recordHistory() {
+            // Remove any future history if we're not at the end
+            appState.editHistory = appState.editHistory.slice(0, appState.historyIndex + 1);
+            // Add new history entry
+            appState.editHistory.push(editor.value.split('\n'));
+            appState.historyIndex++;
+            updateUndoRedoButtons();
+        }
+
+        function updateUndoRedoButtons() {
+            document.getElementById('btn-undo').disabled = appState.historyIndex <= 0;
+            document.getElementById('btn-redo').disabled = appState.historyIndex >= appState.editHistory.length - 1;
+        }
+
+        // Code Formatter
+        function formatCode() {
+            const lines = editor.value.split('\n');
+            const formatted = lines.map(line => {
+                let indent = 0;
+                const trimmed = line.trim();
+
+                // Count closing braces at start
+                for (let i = 0; i < trimmed.length; i++) {
+                    if (trimmed[i] === '}') indent--;
+                    else break;
+                }
+
+                if (indent < 0) indent = 0;
+                const result = '    '.repeat(indent) + trimmed;
+
+                // Count opening braces at end
+                for (let i = trimmed.length - 1; i >= 0; i--) {
+                    if (trimmed[i] === '{') indent++;
+                    else break;
+                }
+
+                return result;
+            }).join('\n');
+
+            editor.value = formatted;
+            recordHistory();
+            updateEditor();
+        }
+
+        function toggleComment() {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+            const lines = selectedText.split('\n');
+
+            const commented = lines.map(line => {
+                const trimmed = line.trim();
+                return trimmed.startsWith('//') ? trimmed.substring(2) : '// ' + trimmed;
+            }).join('\n');
+
+            editor.value = editor.value.substring(0, start) + commented + editor.value.substring(end);
+            updateEditor();
+            handleInput();
+        }
+
+        // Layout Toggles
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+        function toggleAI() { document.getElementById('ai-panel').classList.toggle('open'); }
+        function toggleConsoleFull() { document.getElementById('console-panel').classList.toggle('fullscreen'); }
+
+        function switchTab(t) {
+            document.getElementById('tab-output').classList.toggle('active', t === 'output');
+            document.getElementById('tab-variables').classList.toggle('active', t === 'variables');
+            output.style.display = t === 'output' ? 'block' : 'none';
+            varGrid.style.display = t === 'variables' ? 'block' : 'none';
+        }
+
+        // Execution Mock
+        function runCode() {
+            output.innerHTML = '<div style="color:var(--muted)">Preparing engine...</div>';
+            switchTab('output');
+            setTimeout(() => {
+                output.innerHTML = '';
+                const lines = editor.value.split('\n');
+                let vars = {};
+                lines.forEach(line => {
+                    const s = line.match(/say\s+\"(.*?)\"/);
+                    if(s) output.innerHTML += `<div class="console-line">${s[1]}</div>`;
+                    const sv = line.match(/say\s+([a-zA-Z_]\w*)/);
+                    if(sv && vars[sv[1]]) output.innerHTML += `<div class="console-line">${vars[sv[1]]}</div>`;
+                    const v = line.match(/set\s+([a-zA-Z_]\w*)\s+to\s+(.*)/);
+                    if(v) vars[v[1]] = v[2];
+                });
+                if(!output.innerHTML) output.innerHTML = '<i>Program executed successfully.</i>';
+                varGrid.innerHTML = Object.entries(vars).map(([k,v]) => `<div><b>${k}</b>: <span style="color:var(--syn-number)">${v}</span></div>`).join('') || '<i>No active variables.</i>';
+            }, 400);
+        }
+
+        function setupResizer() {
+            const resizer = document.getElementById('resizer');
+            const consolePanel = document.getElementById('console-panel');
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', () => { isResizing = true; document.body.style.cursor = 'ns-resize'; });
+            window.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                const h = window.innerHeight - e.clientY - 20;
+                if(h > 100 && h < window.innerHeight - 250) consolePanel.style.height = `${h}px`;
+            });
+            window.addEventListener('mouseup', () => { isResizing = false; document.body.style.cursor = 'default'; });
+        }
+
+        function sendAI(e) {
+            e.preventDefault();
+            const inp = document.getElementById('ai-input');
+            const val = inp.value.trim();
+            if(!val) return;
+            const chat = document.getElementById('ai-chat');
+            chat.innerHTML += `<div class="msg msg-user">${val}</div>`;
+            inp.value = '';
+            setTimeout(() => {
+                chat.innerHTML += `<div class="msg msg-bot">That's a smart question! To do that, you can use the <b>set</b> command to save a number, or <b>repeat</b> to make things happen many times.</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            }, 700);
+        }
+
+        function showModal(type) {
+            const overlay = document.getElementById('modal-overlay');
+            const body = document.getElementById('modal-body');
+            overlay.style.display = 'flex';
+
+            if(type === 'settings') {
+                body.innerHTML = `
+                    <div class="settings-section">
+                        <div class="settings-title">⚙️ Appearance</div>
+                        <div class="settings-row">
+                            <span class="settings-label">Dark Mode</span>
+                            <div class="settings-value">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ${appState.theme === 'dark' ? 'checked' : ''} onchange="setSetting('theme', this.checked ? 'dark' : 'light')">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-title">📝 Editor</div>
+                        <div class="settings-row">
+                            <span class="settings-label">Font Size</span>
+                            <div class="settings-value">
+                                <input type="range" min="12" max="24" value="${appState.fontSize}" class="range-slider" oninput="setSetting('fontSize', parseInt(this.value))">
+                                <span class="value-display">${appState.fontSize}px</span>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <span class="settings-label">Font Family</span>
+                            <div class="settings-value">
+                                <select onchange="setSetting('fontFamily', this.value)">
+                                    <option value="JetBrains Mono" ${appState.fontFamily === 'JetBrains Mono' ? 'selected' : ''}>JetBrains Mono</option>
+                                    <option value="Fira Code" ${appState.fontFamily === 'Fira Code' ? 'selected' : ''}>Fira Code</option>
+                                    <option value="Consolas" ${appState.fontFamily === 'Consolas' ? 'selected' : ''}>Consolas</option>
+                                    <option value="Courier" ${appState.fontFamily === 'Courier' ? 'selected' : ''}>Courier</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <span class="settings-label">Line Numbers</span>
+                            <div class="settings-value">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ${appState.showLineNumbers ? 'checked' : ''} onchange="setSetting('showLineNumbers', this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-title">💾 Auto-Save</div>
+                        <div class="settings-row">
+                            <span class="settings-label">Auto-Save (1s delay)</span>
+                            <div class="settings-value">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ${appState.autoSave ? 'checked' : ''} onchange="setSetting('autoSave', this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-title">🎨 Color Theme</div>
+                        <div class="color-swatches">
+                            <div class="swatch ${appState.colorTheme === 'pastel' ? 'active' : ''}" style="background: linear-gradient(135deg, #d8c5ff 0%, #c4efd9 100%);" onclick="setSetting('colorTheme', 'pastel')" title="Pastel"></div>
+                            <div class="swatch ${appState.colorTheme === 'vibrant' ? 'active' : ''}" style="background: linear-gradient(135deg, #ff00ff 0%, #00ffff 100%);" onclick="setSetting('colorTheme', 'vibrant')" title="Vibrant"></div>
+                            <div class="swatch ${appState.colorTheme === 'cool' ? 'active' : ''}" style="background: linear-gradient(135deg, #0099ff 0%, #00ff99 100%);" onclick="setSetting('colorTheme', 'cool')" title="Cool"></div>
+                            <div class="swatch ${appState.colorTheme === 'warm' ? 'active' : ''}" style="background: linear-gradient(135deg, #ffaa00 0%, #ff4500 100%);" onclick="setSetting('colorTheme', 'warm')" title="Warm"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-title">⌨️ Keyboard Shortcuts</div>
+                        <div class="shortcuts-grid">
+                            ${keyboardShortcuts.map(s => `
+                                <div class="shortcut-item">
+                                    <div class="shortcut-key">${s.key}</div>
+                                    <div class="shortcut-desc">${s.desc}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function setSetting(key, value) {
+            appState[key] = value;
+            localStorage.setItem('eaze_' + key, value);
+            applySettings();
+        }
+
+        function closeModal(event) {
+            if (event && event.target !== document.getElementById('modal-overlay')) return;
+            document.getElementById('modal-overlay').style.display = 'none';
+        }
+
+        init();
+    </script>
+</body>
+</html>
