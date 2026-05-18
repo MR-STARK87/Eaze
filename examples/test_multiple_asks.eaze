@@ -1,0 +1,16 @@
+show "First question:"
+ask "Enter your name:" into name
+show name
+
+show ""
+show "Second question:"
+ask "Enter a number:" into number
+show number
+
+show ""
+show "Third question:"
+ask "Enter another number:" into number2
+show number2
+
+show ""
+show "Done!"

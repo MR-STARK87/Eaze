@@ -11,6 +11,7 @@ export class Interpreter {
   constructor() {
     this.globalEnv = new Environment();
     this.output = [];
+    this.outputHandler = null;
     this.inputHandler = (message) => {
       // Default input handler if not overridden
       console.log(message);
@@ -22,10 +23,14 @@ export class Interpreter {
     this.inputHandler = handler;
   }
 
-  run(ast) {
+  setOutputHandler(handler) {
+    this.outputHandler = handler;
+  }
+
+  async run(ast) {
     this.output = [];
     try {
-      this.evaluate(ast, this.globalEnv);
+      await this.evaluate(ast, this.globalEnv);
     } catch (e) {
       if (e instanceof ReturnValue) {
         throw new RuntimeError("Return statement outside function");
@@ -35,20 +40,20 @@ export class Interpreter {
     return this.output;
   }
 
-  evaluate(node, env) {
+  async evaluate(node, env) {
     if (!node) return null;
 
     switch (node.type) {
       case "Program":
-        return this.evaluateBlock(node.body, env);
+        return await this.evaluateBlock(node.body, env);
 
       case "Assignment": {
-        const value = this.evaluate(node.value, env);
+        const value = await this.evaluate(node.value, env);
         if (node.target.type === "Identifier") {
           env.set(node.target.name, value);
         } else if (node.target.type === "IndexExpression") {
-          const array = this.evaluate(node.target.object, env);
-          const index = this.evaluate(node.target.index, env);
+          const array = await this.evaluate(node.target.object, env);
+          const index = await this.evaluate(node.target.index, env);
           if (!Array.isArray(array)) {
             throw new RuntimeError("Can only index arrays");
           }
@@ -63,24 +68,37 @@ export class Interpreter {
       }
 
       case "Show": {
-        const value = this.evaluate(node.value, env);
+        const value = await this.evaluate(node.value, env);
         this.output.push(value);
+        if (this.outputHandler) {
+          await this.outputHandler(value);
+        }
         return null;
       }
 
       case "Ask": {
-        const message = this.evaluate(node.message, env);
+        const message = await this.evaluate(node.message, env);
         let answer = this.inputHandler(message);
+        // If answer is a Promise, await it
+        if (answer instanceof Promise) {
+          answer = await answer;
+        }
         // Attempt to parse to number if it looks like one
-        if (!isNaN(parseFloat(answer)) && isFinite(answer)) {
-          answer = parseFloat(answer);
+        const trimmedAnswer = answer.toString().trim();
+        const parsedNumber = parseFloat(trimmedAnswer);
+        if (
+          !isNaN(parsedNumber) &&
+          isFinite(parsedNumber) &&
+          trimmedAnswer !== ""
+        ) {
+          answer = parsedNumber;
         }
         env.set(node.identifier, answer);
         return null;
       }
 
       case "RepeatLoop": {
-        const times = this.evaluate(node.times, env);
+        const times = await this.evaluate(node.times, env);
         if (typeof times !== "number") {
           throw new RuntimeError(
             `Repeat count must be a number, got ${typeof times}`,
@@ -88,27 +106,27 @@ export class Interpreter {
         }
         for (let i = 0; i < times; i++) {
           const loopEnv = new Environment(env);
-          this.evaluateBlock(node.body, loopEnv);
+          await this.evaluateBlock(node.body, loopEnv);
         }
         return null;
       }
 
       case "WhileLoop": {
-        while (this.evaluate(node.condition, env)) {
+        while (await this.evaluate(node.condition, env)) {
           const loopEnv = new Environment(env);
-          this.evaluateBlock(node.body, loopEnv);
+          await this.evaluateBlock(node.body, loopEnv);
         }
         return null;
       }
 
       case "IfStatement": {
-        const condition = this.evaluate(node.condition, env);
+        const condition = await this.evaluate(node.condition, env);
         if (condition) {
           const blockEnv = new Environment(env);
-          this.evaluateBlock(node.body, blockEnv);
+          await this.evaluateBlock(node.body, blockEnv);
         } else if (node.elseBody) {
           const blockEnv = new Environment(env);
-          this.evaluateBlock(node.elseBody, blockEnv);
+          await this.evaluateBlock(node.elseBody, blockEnv);
         }
         return null;
       }
@@ -142,11 +160,14 @@ export class Interpreter {
 
         const callEnv = new Environment(fn.closure);
         for (let i = 0; i < fn.params.length; i++) {
-          callEnv.set(fn.params[i], this.evaluate(node.arguments[i], env));
+          callEnv.set(
+            fn.params[i],
+            await this.evaluate(node.arguments[i], env),
+          );
         }
 
         try {
-          this.evaluateBlock(fn.body, callEnv);
+          await this.evaluateBlock(fn.body, callEnv);
         } catch (e) {
           if (e instanceof ReturnValue) {
             return e.value;
@@ -159,25 +180,25 @@ export class Interpreter {
       case "ReturnStatement": {
         let value = null;
         if (node.value) {
-          value = this.evaluate(node.value, env);
+          value = await this.evaluate(node.value, env);
         }
         throw new ReturnValue(value);
       }
 
       case "LogicalExpression": {
-        const left = this.evaluate(node.left, env);
+        const left = await this.evaluate(node.left, env);
         if (node.operator === "or") {
           if (left) return left;
-          return this.evaluate(node.right, env);
+          return await this.evaluate(node.right, env);
         } else if (node.operator === "and") {
           if (!left) return left;
-          return this.evaluate(node.right, env);
+          return await this.evaluate(node.right, env);
         }
         throw new RuntimeError(`Unknown logical operator: ${node.operator}`);
       }
 
       case "UnaryExpression": {
-        const right = this.evaluate(node.right, env);
+        const right = await this.evaluate(node.right, env);
         if (node.operator === "not") {
           return !right;
         } else if (node.operator === "-") {
@@ -187,8 +208,8 @@ export class Interpreter {
       }
 
       case "BinaryExpression": {
-        const left = this.evaluate(node.left, env);
-        const right = this.evaluate(node.right, env);
+        const left = await this.evaluate(node.left, env);
+        const right = await this.evaluate(node.right, env);
 
         switch (node.operator) {
           case "+":
@@ -218,12 +239,12 @@ export class Interpreter {
       }
 
       case "ArrayLiteral": {
-        return node.elements.map((el) => this.evaluate(el, env));
+        return Promise.all(node.elements.map((el) => this.evaluate(el, env)));
       }
 
       case "IndexExpression": {
-        const array = this.evaluate(node.object, env);
-        const index = this.evaluate(node.index, env);
+        const array = await this.evaluate(node.object, env);
+        const index = await this.evaluate(node.index, env);
         if (!Array.isArray(array)) {
           throw new RuntimeError("Can only index arrays");
         }
@@ -245,10 +266,10 @@ export class Interpreter {
     }
   }
 
-  evaluateBlock(statements, env) {
+  async evaluateBlock(statements, env) {
     let result = null;
     for (const statement of statements) {
-      result = this.evaluate(statement, env);
+      result = await this.evaluate(statement, env);
     }
     return result;
   }

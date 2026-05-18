@@ -14,6 +14,7 @@ const KEYWORDS = new Set([
   "set",
   "to",
   "show",
+  "say",
   "if",
   "else",
   "end",

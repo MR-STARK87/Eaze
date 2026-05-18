@@ -1,0 +1,14 @@
+show "Testing double quotes!"
+show 'Testing single quotes!'
+
+set name to "Alice"
+show name
+
+ask "What is your age?" into age
+show "You are "
+show age
+show " years old"
+
+ask "First number:" into a
+ask "Second number:" into b
+show a + b

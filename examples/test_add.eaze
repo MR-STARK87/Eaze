@@ -1,0 +1,3 @@
+ask "First number:" into a
+ask "Second number:" into b
+show a + b

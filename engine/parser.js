@@ -18,7 +18,7 @@ export class Parser {
 
   parseStatement() {
     if (this.matchKeyword("set")) return this.parseSet();
-    if (this.matchKeyword("show")) return this.parseShow();
+    if (this.matchKeyword("show") || this.matchKeyword("say")) return this.parseShow();
     if (this.matchKeyword("repeat")) return this.parseRepeat();
     if (this.matchKeyword("while")) return this.parseWhile();
     if (this.matchKeyword("if")) return this.parseIf();

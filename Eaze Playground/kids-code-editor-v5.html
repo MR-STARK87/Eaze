@@ -66,7 +66,30 @@
 
             --sidebar-width: 240px;
             --sidebar-collapsed-width: 64px;
+
+            --density-padding: 12px;
+            --density-gap: 12px;
+
+            /* CLI Colors */
+            --cli-primary: #6a99ff;
+            --cli-secondary: #ff9f40;
+            --cli-success: #4caf50;
+            --cli-error: #f44336;
+            --cli-warning: #ffc107;
+            --cli-accent: #9c27b0;
+            --cli-muted: #9e9e9e;
+            --cli-highlight: #ff5722;
         }
+
+        [data-density="compact"] {
+            --density-padding: 4px;
+            --density-gap: 4px;
+        }
+
+        [data-sidebar="right"] .app-shell { flex-direction: row-reverse; }
+        [data-sidebar="right"] .sidebar { border-right: none; border-left: 1px solid var(--border); }
+        [data-sidebar="right"] .sidebar-toggle { transform: translateX(-50%) rotate(180deg); }
+        [data-sidebar="right"] .sidebar.collapsed .sidebar-toggle { transform: translateX(-50%) rotate(0deg); }
 
         [data-theme="dark"] {
             --bg: oklch(18% 0.01 280);
@@ -181,8 +204,11 @@
         .chip.set { background: var(--mint); color: oklch(30% 0.1 160); }
         .chip.if  { background: var(--peach); color: oklch(30% 0.1 40); }
         .chip.loop { background: var(--sky); color: oklch(30% 0.1 220); }
+        .chip.ask { background: var(--lemon); color: oklch(30% 0.1 100); }
+        .chip.fn { background: var(--pink); color: oklch(30% 0.1 0); }
+        .chip.show { background: var(--bg); color: var(--fg); border: 1px solid var(--border); }
 
-        .workspace { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 12px; overflow: hidden; position: relative; }
+        .workspace { flex: 1; display: flex; flex-direction: column; padding: var(--density-padding); gap: var(--density-gap); overflow: hidden; position: relative; }
 
         .panel { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-sm); }
 
@@ -212,7 +238,40 @@
         .tab.active { color: var(--fg); background: var(--bg); }
         .tab-content { flex: 1; padding: 16px; font-family: var(--font-mono); font-size: 14px; overflow-y: auto; background: var(--surface); }
         .console-line { margin-bottom: 6px; display: flex; gap: 8px; }
-        .console-line::before { content: ">"; color: var(--mint); font-weight: 800; }
+                .console-line::before { content: ""; color: var(--mint); font-weight: 800; }
+
+                /* --- Visualizer Panel (kid-friendly execution trace) --- */
+                .viz-wrap { height: 100%; display: flex; gap: 12px; }
+                .viz-steps { width: 56%; min-width: 240px; overflow: auto; padding-right: 12px; border-right: 1px solid var(--border); }
+                .viz-detail { flex: 1; overflow: auto; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+
+                .viz-step { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; margin-bottom: 8px; }
+                .viz-step:hover { filter: brightness(0.98); }
+                .viz-step.active { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 35%, transparent); }
+
+                .viz-step-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+                .viz-step-title { font-weight: 900; font-size: 13px; color: var(--fg); }
+                .viz-step-meta { font-size: 11px; color: var(--muted); white-space: nowrap; }
+                .viz-step-msg { margin-top: 6px; font-size: 12.5px; color: var(--fg); line-height: 1.35; }
+
+                .viz-badge { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); }
+                .viz-badge.set { background: var(--mint); color: oklch(30% 0.1 160); border-color: color-mix(in oklab, var(--mint) 70%, var(--border)); }
+                .viz-badge.say { background: var(--lavender); color: oklch(30% 0.1 300); border-color: color-mix(in oklab, var(--lavender) 70%, var(--border)); }
+                .viz-badge.if { background: var(--peach); color: oklch(30% 0.1 40); border-color: color-mix(in oklab, var(--peach) 70%, var(--border)); }
+                .viz-badge.loop { background: var(--sky); color: oklch(30% 0.1 220); border-color: color-mix(in oklab, var(--sky) 70%, var(--border)); }
+                .viz-badge.call { background: var(--lemon); color: oklch(30% 0.1 100); border-color: color-mix(in oklab, var(--lemon) 70%, var(--border)); }
+                .viz-badge.misc { background: var(--bg); }
+
+                .viz-detail-card { border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+                .viz-detail-title { font-size: 12px; font-weight: 900; margin: 0 0 8px 0; color: var(--fg); }
+                .viz-kv { display: grid; grid-template-columns: 1fr; gap: 6px; font-family: var(--font-mono); font-size: 12px; }
+                .viz-kv b { color: var(--fg); }
+                .viz-hint { color: var(--muted); font-style: italic; font-size: 12px; }
+
+                @media (max-width: 900px) {
+                    .viz-wrap { flex-direction: column; }
+                    .viz-steps { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 12px; }
+                }
 
         /* --- AI Companion --- */
         .ai-panel { width: 320px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; right: 0; top: 64px; bottom: 0; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 300; }
@@ -284,6 +343,60 @@
 
         /* Values Display */
         .value-display { font-size: 13px; font-weight: 600; color: var(--accent); min-width: 40px; text-align: right; }
+
+        /* --- Templates Modal --- */
+        .template-search { width: 100%; height: 42px; border-radius: 12px; border: 1px solid var(--border); padding: 0 14px; font-size: 14px; outline: none; background: var(--bg); color: var(--fg); }
+        .template-search:focus { border-color: color-mix(in oklab, var(--accent) 60%, var(--border)); box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 25%, transparent); }
+        .template-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 12px; }
+        .template-card { border: 1px solid var(--border); background: var(--surface); border-radius: 14px; padding: 12px; display: flex; gap: 12px; align-items: flex-start; }
+        .template-icon { width: 36px; height: 36px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; flex: 0 0 36px; }
+        .template-main { flex: 1; min-width: 0; }
+        .template-title { font-weight: 900; font-size: 14px; margin: 0; color: var(--fg); }
+        .template-desc { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+        .template-tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .template-tag { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); color: var(--muted); }
+        .template-actions { display: flex; flex-direction: column; gap: 6px; }
+        .template-actions .btn { height: 32px; padding: 0 10px; font-size: 12px; border-radius: 10px; }
+        .template-hint { margin-top: 10px; color: var(--muted); font-style: italic; font-size: 12px; }
+
+        /* Custom Modal UI */
+        .modal-message { font-size: 15px; color: var(--fg); line-height: 1.5; margin-bottom: 24px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
+
+        /* Help Modal Specific Styles */
+        .help-container { display: flex; height: 60vh; margin: -24px; border-top: 1px solid var(--border); }
+        .help-sidebar { width: 180px; background: var(--bg); border-right: 1px solid var(--border); padding: 16px 8px; overflow-y: auto; }
+        .help-content { flex: 1; padding: 24px; overflow-y: auto; background: var(--surface); }
+        .help-nav-item { display: block; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--muted); text-decoration: none; margin-bottom: 2px; cursor: pointer; }
+        .help-nav-item:hover { background: var(--border); color: var(--fg); }
+        .help-nav-item.active { background: var(--lavender); color: oklch(25% 0.1 300); font-weight: 700; }
+        .help-section { display: none; }
+        .help-section.active { display: block; }
+        .help-content h1 { font-size: 22px; margin-bottom: 16px; font-weight: 800; }
+        .help-content h2 { font-size: 18px; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+        .help-content h3 { font-size: 15px; margin-top: 16px; margin-bottom: 8px; }
+        .help-content p { font-size: 14px; margin-bottom: 12px; color: var(--fg); opacity: 0.9; }
+        .help-content ul { margin-left: 20px; margin-bottom: 12px; font-size: 14px; }
+        .help-content li { margin-bottom: 6px; }
+        .help-content code { font-family: var(--font-mono); background: var(--bg); padding: 2px 4px; border-radius: 4px; font-size: 0.9em; border: 1px solid var(--border); }
+        .help-content pre { background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 8px; margin-bottom: 16px; overflow-x: auto; }
+        .help-content pre code { border: none; background: none; padding: 0; }
+        .help-content table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+        .help-content th, .help-content td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
+        .help-content th { background: var(--bg); font-weight: 700; }
+
+        /* --- CLI Terminal --- */
+        #pane-cli { padding: 0; background: #1e1e1e; color: #d4d4d4; display: flex; flex-direction: column; height: 100%; border-radius: 0 0 var(--radius-lg) var(--radius-lg); overflow: hidden; }
+        .cli-output { flex: 1; overflow-y: auto; padding: 16px; font-family: var(--font-mono); font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+        .cli-input-line { display: flex; align-items: baseline; gap: 8px; padding: 0 16px 16px 16px; font-family: var(--font-mono); font-size: 13px; }
+        .cli-prompt { color: var(--cli-secondary); font-weight: bold; flex-shrink: 0; user-select: none; }
+        .cli-input { flex: 1; background: transparent; border: none; color: inherit; font-family: inherit; font-size: inherit; outline: none; padding: 0; }
+        .cli-error { color: var(--cli-error); }
+        .cli-success { color: var(--cli-success); }
+        .cli-primary { color: var(--cli-primary); }
+        .cli-secondary { color: var(--cli-secondary); }
+        .cli-accent { color: var(--cli-accent); }
+        .cli-muted { color: var(--cli-muted); }
     </style>
 </head>
 <body>
@@ -297,8 +410,11 @@
             <button class="btn" title="Undo (Ctrl+Z)" onclick="undo()" id="btn-undo">↩️ Undo</button>
             <button class="btn" title="Redo (Ctrl+Y)" onclick="redo()" id="btn-redo">↪️ Redo</button>
             <button class="btn" onclick="formatCode()" title="Format Code (Ctrl+Shift+F)">✨ Format</button>
+            <button class="btn" onclick="showModal('templates')" title="Templates">📚 Templates</button>
             <button class="btn" onclick="showModal('settings')" title="Settings">⚙️ Settings</button>
+            <button class="btn" onclick="showModal('help')" title="Help Documentation">❓ Help</button>
             <button class="btn btn-ai" onclick="toggleAI()">✨ Ask AI</button>
+            <button class="btn" onclick="runInCLI()" title="Run in CLI">💻 Run in CLI</button>
             <button class="btn btn-primary" onclick="runCode()">▶️ Run</button>
         </div>
     </header>
@@ -315,10 +431,15 @@
 
         <main class="main">
             <div class="blocks-bar">
-                <div class="chip say" onclick="insert('say \"Hello!\"')">say</div>
-                <div class="chip set" onclick="insert('set score to 10')">set</div>
-                <div class="chip if" onclick="insert('if score > 5 {\n    say \"Great job!\"\n}')">if / else</div>
-                <div class="chip loop" onclick="insert('repeat 5 {\n    say \"Looping!\"\n}')">repeat</div>
+                <div class="chip say" onmousedown="event.preventDefault(); insert('say \"Hello!\"')">say</div>
+                <div class="chip set" onmousedown="event.preventDefault(); insert('set score to 10')">set</div>
+                <div class="chip ask" onmousedown="event.preventDefault(); insert('ask \"What is your name?\" into name')">ask</div>
+                <div class="chip show" onmousedown="event.preventDefault(); insert('show result')">show</div>
+                <div class="chip if" onmousedown="event.preventDefault(); insert('if score > 5\n    say \"Great job!\"\nelse\n    say \"Try again!\"\nend')">if / else</div>
+                <div class="chip loop" onmousedown="event.preventDefault(); insert('repeat 5 times\n    \nend')">repeat</div>
+                <div class="chip loop" onmousedown="event.preventDefault(); insert('while found == 0\n    \nend')">while</div>
+                <div class="chip fn" onmousedown="event.preventDefault(); insert('define greet(name)\n    say \"Hello, \" + name\nend')">define</div>
+                <div class="chip fn" onmousedown="event.preventDefault(); insert('return result')">return</div>
             </div>
 
             <div class="workspace" id="workspace">
@@ -330,6 +451,7 @@
                     <div class="editor-area">
                         <div class="gutter" id="gutter"></div>
                         <div class="scroll-container">
+                            <div class="editor-highlight" id="line-highlight"></div>
                             <pre class="editor-pre" id="pre-highlight"></pre>
                             <textarea class="editor-textarea" id="main-editor" spellcheck="false" oninput="handleInput()" onkeydown="handleKey(event)" onscroll="syncScroll()"></textarea>
                         </div>
@@ -341,16 +463,30 @@
                 <div class="panel console-panel" id="console-panel">
                     <div class="panel-header">
                         <div class="tabs">
-                            <div class="tab active" onclick="switchTab('output')" id="tab-output">Output</div>
-                            <div class="tab" onclick="switchTab('variables')" id="tab-variables">Variables</div>
-                        </div>
-                        <button class="btn" style="width:28px; height:28px; padding:0;" onclick="toggleConsoleFull()" title="Fullscreen">⛶</button>
-                    </div>
-                    <div class="tab-content" id="pane-output">
+                                                    <div class="tab active" onclick="switchTab('output')" id="tab-output">Output</div>
+                                                    <div class="tab" onclick="switchTab('variables')" id="tab-variables">Variables</div>
+                                                    <div class="tab" onclick="switchTab('visual')" id="tab-visual">Visualize</div>
+                                                    <div class="tab" onclick="switchTab('cli')" id="tab-cli">CLI</div>
+                                                    </div>
+                                                    <div style="display: flex; gap: 8px;">
+                                                    <button class="btn" style="height:28px; padding:0 8px; font-size:11px;" onclick="clearOutput()" title="Clear Output">🗑️ Clear</button>
+                                                    <button class="btn" style="width:28px; height:28px; padding:0;" onclick="toggleConsoleFull()" title="Fullscreen">⛶</button>
+                                                    </div>
+                                                    </div>                    <div class="tab-content" id="pane-output">
                         <div style="color: var(--muted); font-style: italic;">Program output will show here...</div>
                     </div>
                     <div class="tab-content" id="pane-variables" style="display: none;">
                         <div style="color: var(--muted); font-style: italic;">No variables tracked yet.</div>
+                    </div>
+                    <div class="tab-content" id="pane-visual" style="display: none;">
+                        <div style="color: var(--muted); font-style: italic;">Run your code to see a step-by-step visualization.</div>
+                    </div>
+                    <div class="tab-content" id="pane-cli" style="display: none;">
+                        <div id="cli-output" class="cli-output"></div>
+                        <div class="cli-input-line">
+                            <span id="cli-prompt" class="cli-prompt">&gt;</span>
+                            <input type="text" id="cli-input" class="cli-input" spellcheck="false" autocomplete="off">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -383,6 +519,9 @@
 
     <div class="save-indicator" id="save-indicator">✓ Saved</div>
 
+    <!-- Eaze Engine Bundle -->
+    <script src="eaze-engine-bundle.js"></script>
+
     <script>
         const editor = document.getElementById('main-editor');
         const pre = document.getElementById('pre-highlight');
@@ -390,12 +529,13 @@
         const fileList = document.getElementById('file-list');
         const output = document.getElementById('pane-output');
         const varGrid = document.getElementById('pane-variables');
+        const vizPane = document.getElementById('pane-visual');
 
         // Enhanced App State with Undo/Redo
         let appState = {
             files: JSON.parse(localStorage.getItem('eaze_v5_files')) || [
                 { name: 'hello.eaze', content: 'say "Welcome to Eaze!"\n\nset player to "Zaid"\nsay "Hello, "\nsay player' },
-                { name: 'counter.eaze', content: 'set i to 1\nrepeat 5 {\n    say i\n    set i to i + 1\n}' }
+                { name: 'counter.eaze', content: 'set i to 1\nrepeat 5 times\n    say i\n    set i to i + 1\nend' }
             ],
             activeIdx: 0,
             theme: localStorage.getItem('eaze_theme') || 'light',
@@ -403,8 +543,14 @@
             fontFamily: localStorage.getItem('eaze_fontFamily') || 'JetBrains Mono',
             showLineNumbers: localStorage.getItem('eaze_showLineNumbers') !== 'false',
             autoSave: localStorage.getItem('eaze_autoSave') !== 'false',
-            colorTheme: localStorage.getItem('eaze_colorTheme') || 'pastel',
             showKeyboardShortcuts: localStorage.getItem('eaze_showKeyboardShortcuts') !== 'false',
+            wordWrap: localStorage.getItem('eaze_wordWrap') === 'true',
+            tabSize: parseInt(localStorage.getItem('eaze_tabSize')) || 4,
+            autoCloseBrackets: localStorage.getItem('eaze_autoCloseBrackets') !== 'false',
+            liveMode: localStorage.getItem('eaze_liveMode') === 'true',
+            traceLimit: parseInt(localStorage.getItem('eaze_traceLimit')) || 1000,
+            layoutDensity: localStorage.getItem('eaze_layoutDensity') || 'spacious',
+            sidebarPosition: localStorage.getItem('eaze_sidebarPosition') || 'left',
             editHistory: [[]],
             historyIndex: 0
         };
@@ -422,51 +568,451 @@
             { key: 'Ctrl+/', desc: 'Comment' }
         ];
 
+        // Template Programs (based on Eaze language docs)
+        const TEMPLATE_PROGRAMS = [
+            {
+                id: 'welcome-say',
+                icon: '👋',
+                title: 'Welcome Message',
+                desc: 'Your first program: show a friendly message on the screen.',
+                tags: ['say'],
+                fileBase: 'welcome',
+                code:
+`# Welcome to Eaze!
+
+say "Welcome to Eaze!"
+say "You can change this message 🙂"`
+            },
+            {
+                id: 'greeter-ask',
+                icon: '🗣️',
+                title: 'Ask My Name (Greeter)',
+                desc: 'Ask the user a question and greet them using a variable.',
+                tags: ['ask', 'set', 'show'],
+                fileBase: 'greeter',
+                code:
+`# Ask the user for their name
+ask "What is your name?" into user_name
+
+show "Welcome, " + user_name
+show "Nice to meet you!"`
+            },
+            {
+                id: 'counter-repeat',
+                icon: '🔁',
+                title: 'Counting with repeat',
+                desc: 'Count from 1 to 5 using a repeat loop.',
+                tags: ['set', 'repeat', 'show'],
+                fileBase: 'counter',
+                code:
+`# Count up using repeat
+set i to 1
+
+repeat 5 times
+    show i
+    set i to i + 1
+end
+
+show "Done counting!"`
+            },
+            {
+                id: 'countdown-while',
+                icon: '⏳',
+                title: 'Countdown with while',
+                desc: 'Count down to 0 using a while loop.',
+                tags: ['set', 'while', 'show'],
+                fileBase: 'countdown',
+                code:
+`# Count down using while
+set n to 5
+
+while n >= 0
+    show n
+    set n to n - 1
+end
+
+show "Blast off!"`
+            },
+            {
+                id: 'age-check-if',
+                icon: '🤔',
+                title: 'Age Checker (if / else)',
+                desc: 'Use if/else to make a decision based on age.',
+                tags: ['ask', 'if', 'else', 'show'],
+                fileBase: 'age-checker',
+                code:
+`# Ask for age and decide
+ask "How old are you?" into age
+
+if age >= 18
+    show "You are an adult."
+else
+    show "You are not an adult yet."
+end`
+            },
+            {
+                id: 'math-two-numbers',
+                icon: '🧮',
+                title: 'Add Two Numbers',
+                desc: 'Ask for two numbers and show the answer.',
+                tags: ['ask', 'show', '+'],
+                fileBase: 'add-two-numbers',
+                code:
+`# Add two numbers
+ask "First number?" into a
+ask "Second number?" into b
+
+show "a + b ="
+show a + b`
+            },
+            {
+                id: 'calculator-basic',
+                icon: '➕',
+                title: 'Mini Calculator',
+                desc: 'Show +, -, ×, and ÷ (with a safe divide-by-zero check).',
+                tags: ['ask', 'if', 'show'],
+                fileBase: 'calculator',
+                code:
+`# Mini calculator
+ask "Number A?" into a
+ask "Number B?" into b
+
+show "A + B ="
+show a + b
+
+show "A - B ="
+show a - b
+
+show "A * B ="
+show a * b
+
+if b == 0
+    show "A / B = (cannot divide by 0)"
+else
+    show "A / B ="
+    show a / b
+end`
+            },
+            {
+                id: 'lists-arrays',
+                icon: '📦',
+                title: 'Lists (Arrays) Basics',
+                desc: 'Make a list, read an item, and change an item.',
+                tags: ['set', 'arrays', 'index', 'show'],
+                fileBase: 'lists',
+                code:
+`# Lists (arrays) are ordered values
+set fruits to ["Apple", "Banana", "Cherry"]
+
+show "First fruit:"
+show fruits[0]
+
+# Change the second fruit (index 1)
+set fruits[1] to "Blueberry"
+
+show "All fruits:"
+show fruits`
+            },
+            {
+                id: 'running-total',
+                icon: '🎯',
+                title: 'Running Total',
+                desc: 'Add numbers together over and over in a loop.',
+                tags: ['set', 'repeat', 'ask', 'show'],
+                fileBase: 'running-total',
+                code:
+`# Add up 3 numbers
+set total to 0
+
+repeat 3 times
+    ask "Give me a number" into x
+    set total to total + x
+end
+
+show "Total is:"
+show total`
+            },
+            {
+                id: 'guess-game',
+                icon: '🎲',
+                title: 'Guess the Secret Number',
+                desc: 'A simple game using while + if. (The secret is hardcoded.)',
+                tags: ['set', 'while', 'ask', 'if', 'show'],
+                fileBase: 'guess-game',
+                code:
+`# Guessing game (no random yet)
+set secret to 7
+set guess to -1
+
+show "I am thinking of a number from 1 to 10."
+
+while guess != secret
+    ask "Your guess?" into guess
+
+    if guess < secret
+        show "Too small!"
+    else
+        if guess > secret
+            show "Too big!"
+        else
+            show "Correct!"
+        end
+    end
+end`
+            },
+            {
+                id: 'password-lock',
+                icon: '🔒',
+                title: 'Password Lock',
+                desc: 'Keep asking until the user types the correct password.',
+                tags: ['set', 'while', 'ask', 'show', 'not'],
+                fileBase: 'password-lock',
+                code:
+`# Keep asking until correct
+set password to "eaze"
+set attempt to ""
+
+while attempt != password
+    ask "Password?" into attempt
+end
+
+show "Unlocked!"`
+            },
+            {
+                id: 'choose-adventure',
+                icon: '🧭',
+                title: 'Choose Your Own Adventure',
+                desc: 'A tiny story that changes based on your choice.',
+                tags: ['ask', 'if', 'else', 'show'],
+                fileBase: 'adventure',
+                code:
+`# Choose a path
+ask "Choose: left or right?" into path
+
+if path == "left"
+    show "You find a treasure chest!"
+else
+    show "You meet a friendly dragon."
+end`
+            },
+            {
+                id: 'functions-square',
+                icon: '🧩',
+                title: 'Functions: square()',
+                desc: 'Define a function, return a value, and call it.',
+                tags: ['define', 'return', 'call', 'set', 'show'],
+                fileBase: 'square-function',
+                code:
+`# Functions are reusable blocks
+define square(n)
+    return n * n
+end
+
+ask "Number to square?" into n
+set result to call square(n)
+
+show "Square is:"
+show result`
+            },
+            {
+                id: 'logic-demo',
+                icon: '🧠',
+                title: 'Logic: and / or / not',
+                desc: 'See how logic works with true (1) and false (0).',
+                tags: ['set', 'and', 'or', 'not', 'show'],
+                fileBase: 'logic',
+                code:
+`# 1 means true, 0 means false
+set a to 1
+set b to 0
+
+show "a is:"
+show a
+show "b is:"
+show b
+
+show "not a is:"
+show not a
+
+show "a and b is:"
+show a and b
+
+show "a or b is:"
+show a or b`
+            }
+        ];
+
+        function getTemplateById(id) {
+            return TEMPLATE_PROGRAMS.find(t => t.id === id);
+        }
+
+        function slugifyFileBase(text) {
+            return String(text || '')
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .slice(0, 40) || 'template';
+        }
+
+        function makeUniqueFileName(base) {
+            const safeBase = slugifyFileBase(base);
+            const taken = new Set(appState.files.map(f => f.name.toLowerCase()));
+            let name = `${safeBase}.eaze`;
+            let n = 2;
+            while (taken.has(name.toLowerCase())) {
+                name = `${safeBase}-${n}.eaze`;
+                n++;
+            }
+            return name;
+        }
+
+        function applyTemplateToCurrent(code) {
+            editor.value = code;
+            recordHistory();
+            updateEditor();
+            appState.files[appState.activeIdx].content = editor.value;
+            saveCode();
+        }
+
+        function createFileFromTemplate(filename, code) {
+            // Save current file content first
+            appState.files[appState.activeIdx].content = editor.value;
+
+            appState.files.push({ name: filename, content: code });
+            appState.activeIdx = appState.files.length - 1;
+            appState.editHistory = [code.split('\n')];
+            appState.historyIndex = 0;
+            loadActiveFile();
+            renderFiles();
+            saveCode();
+        }
+
+        function useTemplate(templateId, mode) {
+            const tpl = getTemplateById(templateId);
+            if (!tpl) return;
+
+            if (mode === 'new') {
+                const filename = makeUniqueFileName(tpl.fileBase || tpl.title);
+                createFileFromTemplate(filename, tpl.code);
+                closeModal();
+                return;
+            }
+
+            showConfirmModal({
+                title: 'Replace Current Code?',
+                message: `Are you sure you want to load <b>${tpl.title}</b> into <b>${appState.files[appState.activeIdx].name}</b>? This will replace your current code. (You can still use Undo if you change your mind!)`,
+                confirmText: 'Load Template',
+                cancelText: 'Back',
+                onConfirm: () => {
+                    applyTemplateToCurrent(tpl.code);
+                    closeModal();
+                },
+                onCancel: () => showModal('templates')
+            });
+        }
+
+        function renderTemplatesList(filterText) {
+            const list = document.getElementById('template-list');
+            if (!list) return;
+
+            const q = String(filterText || '').toLowerCase().trim();
+            list.innerHTML = '';
+
+            const matches = TEMPLATE_PROGRAMS.filter(t => {
+                if (!q) return true;
+                const hay = [t.title, t.desc, ...(t.tags || [])].join(' ').toLowerCase();
+                return hay.includes(q);
+            });
+
+            if (matches.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'template-hint';
+                empty.textContent = 'No templates found. Try searching for: loop, if, ask, function…';
+                list.appendChild(empty);
+                return;
+            }
+
+            matches.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'template-card';
+
+                const icon = document.createElement('div');
+                icon.className = 'template-icon';
+                icon.textContent = t.icon || '📄';
+
+                const main = document.createElement('div');
+                main.className = 'template-main';
+
+                const title = document.createElement('div');
+                title.className = 'template-title';
+                title.textContent = t.title;
+
+                const desc = document.createElement('div');
+                desc.className = 'template-desc';
+                desc.textContent = t.desc;
+
+                const tags = document.createElement('div');
+                tags.className = 'template-tags';
+                (t.tags || []).forEach(tag => {
+                    const el = document.createElement('span');
+                    el.className = 'template-tag';
+                    el.textContent = tag;
+                    tags.appendChild(el);
+                });
+
+                main.appendChild(title);
+                main.appendChild(desc);
+                main.appendChild(tags);
+
+                const actions = document.createElement('div');
+                actions.className = 'template-actions';
+
+                const btnReplace = document.createElement('button');
+                btnReplace.className = 'btn btn-primary';
+                btnReplace.textContent = 'Use';
+                btnReplace.addEventListener('click', () => useTemplate(t.id, 'replace'));
+
+                const btnNew = document.createElement('button');
+                btnNew.className = 'btn';
+                btnNew.textContent = 'New file';
+                btnNew.addEventListener('click', () => useTemplate(t.id, 'new'));
+
+                actions.appendChild(btnReplace);
+                actions.appendChild(btnNew);
+
+                card.appendChild(icon);
+                card.appendChild(main);
+                card.appendChild(actions);
+
+                list.appendChild(card);
+            });
+        }
+
         function init() {
             applySettings();
             renderFiles();
             loadActiveFile();
             setupResizer();
             setupKeyboardShortcuts();
+            CLIController.init();
         }
 
         function applySettings() {
             document.body.setAttribute('data-theme', appState.theme);
+            document.body.setAttribute('data-density', appState.layoutDensity);
+            document.body.setAttribute('data-sidebar', appState.sidebarPosition);
+
             editor.style.fontSize = appState.fontSize + 'px';
             pre.style.fontSize = appState.fontSize + 'px';
             editor.style.fontFamily = appState.fontFamily + ', monospace';
             pre.style.fontFamily = appState.fontFamily + ', monospace';
-            gutter.style.display = appState.showLineNumbers ? 'flex' : 'none';
-            updateColorTheme();
-        }
 
-        function updateColorTheme() {
-            const themes = {
-                pastel: {
-                    '--syn-keyword': 'oklch(65% 0.15 300)',
-                    '--syn-string': 'oklch(70% 0.15 160)',
-                    '--syn-number': 'oklch(70% 0.15 40)',
-                },
-                vibrant: {
-                    '--syn-keyword': 'oklch(55% 0.25 300)',
-                    '--syn-string': 'oklch(60% 0.25 160)',
-                    '--syn-number': 'oklch(60% 0.25 40)',
-                },
-                cool: {
-                    '--syn-keyword': 'oklch(65% 0.15 270)',
-                    '--syn-string': 'oklch(70% 0.15 180)',
-                    '--syn-number': 'oklch(70% 0.15 220)',
-                },
-                warm: {
-                    '--syn-keyword': 'oklch(65% 0.15 30)',
-                    '--syn-string': 'oklch(70% 0.15 60)',
-                    '--syn-number': 'oklch(70% 0.15 0)',
-                }
-            };
-            const theme = themes[appState.colorTheme] || themes.pastel;
-            Object.entries(theme).forEach(([key, value]) => {
-                document.documentElement.style.setProperty(key, value);
-            });
+            editor.style.whiteSpace = appState.wordWrap ? 'pre-wrap' : 'pre';
+            pre.style.whiteSpace = appState.wordWrap ? 'pre-wrap' : 'pre';
+
+            gutter.style.display = appState.showLineNumbers ? 'flex' : 'none';
+
             updateEditor();
         }
 
@@ -495,18 +1041,29 @@
         }
 
         function addFile() {
-            const name = prompt("Enter file name:", "my-code.eaze");
-            if(name) {
-                const safeName = name.endsWith('.eaze') ? name : name + '.eaze';
-                appState.files.push({ name: safeName, content: '' });
-                switchFile(appState.files.length - 1);
-            }
+            showInputModal({
+                title: 'New File',
+                message: 'Enter a name for your new Eaze file:',
+                placeholder: 'my-code.eaze',
+                defaultValue: 'my-code.eaze',
+                confirmText: 'Create File',
+                onConfirm: (name) => {
+                    const safeName = name.endsWith('.eaze') ? name : name + '.eaze';
+                    appState.files.push({ name: safeName, content: '' });
+                    switchFile(appState.files.length - 1);
+                }
+            });
         }
-
         function handleInput() {
             updateEditor();
             debouncedAutoSave();
             updateUndoRedoButtons();
+
+            if (appState.liveMode) {
+                // Clear any pending runCode timer to avoid excessive runs
+                if (window.liveRunTimer) clearTimeout(window.liveRunTimer);
+                window.liveRunTimer = setTimeout(() => runCode(), 500);
+            }
         }
 
         function debouncedAutoSave() {
@@ -532,19 +1089,101 @@
             }, 2000);
         }
 
+        const HIGHLIGHT_KEYWORDS = new Set([
+            'say','set','to','show','if','else','repeat','while','define','call','times','end','ask','into','return','and','or','not'
+        ]);
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+
+        // A small, safe highlighter that *does not* run regex replacements on already-generated HTML.
+        // This prevents broken markup like: `"token keyword">` showing up in the editor.
+        function highlightEaze(code) {
+            let out = "";
+            let i = 0;
+
+            while (i < code.length) {
+                const ch = code[i];
+
+                // Newline
+                if (ch === "\n") {
+                    out += "\n";
+                    i++;
+                    continue;
+                }
+
+                // Comment (engine uses # ... until end-of-line)
+                if (ch === "#") {
+                    const start = i;
+                    while (i < code.length && code[i] !== "\n") i++;
+                    out += `<span class="token comment">${escapeHtml(code.slice(start, i))}</span>`;
+                    continue;
+                }
+
+                // String (single or double quoted; no escape support)
+                if (ch === '"' || ch === "'") {
+                    const quote = ch;
+                    const start = i;
+                    i++; // consume opening quote
+                    while (i < code.length && code[i] !== quote) {
+                        // stop at newline to avoid swallowing the whole file when unterminated
+                        if (code[i] === "\n") break;
+                        i++;
+                    }
+                    if (i < code.length && code[i] === quote) i++; // consume closing quote
+                    out += `<span class="token string">${escapeHtml(code.slice(start, i))}</span>`;
+                    continue;
+                }
+
+                // Number (integer or simple decimal)
+                if (/[0-9]/.test(ch)) {
+                    const start = i;
+                    while (i < code.length && /[0-9]/.test(code[i])) i++;
+                    if (i < code.length && code[i] === ".") {
+                        const dotPos = i;
+                        i++; // consume '.'
+                        if (i < code.length && /[0-9]/.test(code[i])) {
+                            while (i < code.length && /[0-9]/.test(code[i])) i++;
+                        } else {
+                            // not a real decimal, roll back to keep '.' as normal text
+                            i = dotPos;
+                        }
+                    }
+                    out += `<span class="token number">${escapeHtml(code.slice(start, i))}</span>`;
+                    continue;
+                }
+
+                // Identifier / keyword
+                if (/[a-zA-Z_]/.test(ch)) {
+                    const start = i;
+                    i++;
+                    while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) i++;
+                    const word = code.slice(start, i);
+                    if (HIGHLIGHT_KEYWORDS.has(word)) {
+                        out += `<span class="token keyword">${escapeHtml(word)}</span>`;
+                    } else {
+                        out += escapeHtml(word);
+                    }
+                    continue;
+                }
+
+                // Everything else (operators, whitespace, punctuation)
+                out += escapeHtml(ch);
+                i++;
+            }
+
+            return out;
+        }
+
         function updateEditor() {
             let code = editor.value;
-            if(code[code.length-1] === "\n") code += " ";
+            if (code[code.length - 1] === "\n") code += " ";
 
-            const highlighted = code
-                .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-                .replace(/\b(say|set|to|if|else|repeat|while|define|call)\b/g, '<span class="token keyword">$1</span>')
-                .replace(/\"(.*?)\"/g, '<span class="token string">\"$1\"</span>')
-                .replace(/\b(\d+)\b/g, '<span class="token number">$1</span>')
-                .replace(/\/\/(.*)/g, '<span class="token comment">//$1</span>')
-                .replace(/\b([a-zA-Z_]\w*)(?=\s*\{)/g, '<span class="token fn">$1</span>');
-
-            pre.innerHTML = highlighted;
+            pre.innerHTML = highlightEaze(code);
 
             const lineCount = editor.value.split('\n').length;
             gutter.innerHTML = Array.from({length: lineCount}, (_, i) => `<div style="height:24px">${i+1}</div>`).join('');
@@ -558,10 +1197,35 @@
             if(e.key === 'Tab') {
                 e.preventDefault();
                 const start = editor.selectionStart;
-                editor.value = editor.value.substring(0, start) + "    " + editor.value.substring(editor.selectionEnd);
-                editor.selectionStart = editor.selectionEnd = start + 4;
+                const spaces = " ".repeat(appState.tabSize || 4);
+                editor.value = editor.value.substring(0, start) + spaces + editor.value.substring(editor.selectionEnd);
+                editor.selectionStart = editor.selectionEnd = start + spaces.length;
                 updateEditor();
                 return;
+            }
+
+            // Auto-close brackets and quotes
+            if (appState.autoCloseBrackets) {
+                const pairs = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'" };
+                if (pairs[e.key]) {
+                    e.preventDefault();
+                    const start = editor.selectionStart;
+                    const end = editor.selectionEnd;
+                    const val = editor.value;
+
+                    // If text is selected, wrap it
+                    if (start !== end) {
+                        editor.value = val.substring(0, start) + e.key + val.substring(start, end) + pairs[e.key] + val.substring(end);
+                        editor.selectionStart = start + 1;
+                        editor.selectionEnd = end + 1;
+                    } else {
+                        // Just insert the pair and move cursor in between
+                        editor.value = val.substring(0, start) + e.key + pairs[e.key] + val.substring(start);
+                        editor.selectionStart = editor.selectionEnd = start + 1;
+                    }
+                    updateEditor();
+                    return;
+                }
             }
 
             // Keyboard shortcuts
@@ -612,10 +1276,13 @@
 
         function insert(snippet) {
             const start = editor.selectionStart;
-            editor.value = editor.value.substring(0, start) + snippet + editor.value.substring(editor.selectionEnd);
+            const end = editor.selectionEnd;
+            const val = editor.value;
+            editor.value = val.substring(0, start) + snippet + val.substring(end);
             editor.selectionStart = editor.selectionEnd = start + snippet.length;
             editor.focus();
             updateEditor();
+            recordHistory();
             handleInput();
         }
 
@@ -691,8 +1358,13 @@
             const lines = selectedText.split('\n');
 
             const commented = lines.map(line => {
-                const trimmed = line.trim();
-                return trimmed.startsWith('//') ? trimmed.substring(2) : '// ' + trimmed;
+                // Preserve indentation and toggle Eaze-style comments (# ...)
+                if (/^\s*#/.test(line)) {
+                    // Remove leading '#' and one optional following space
+                    return line.replace(/^(\s*)#\s?/, '$1');
+                }
+                // Insert '# ' after leading indentation
+                return line.replace(/^(\s*)/, '$1# ');
             }).join('\n');
 
             editor.value = editor.value.substring(0, start) + commented + editor.value.substring(end);
@@ -708,29 +1380,656 @@
         function switchTab(t) {
             document.getElementById('tab-output').classList.toggle('active', t === 'output');
             document.getElementById('tab-variables').classList.toggle('active', t === 'variables');
+            document.getElementById('tab-visual').classList.toggle('active', t === 'visual');
+            document.getElementById('tab-cli').classList.toggle('active', t === 'cli');
+
             output.style.display = t === 'output' ? 'block' : 'none';
             varGrid.style.display = t === 'variables' ? 'block' : 'none';
+            vizPane.style.display = t === 'visual' ? 'block' : 'none';
+            document.getElementById('pane-cli').style.display = t === 'cli' ? 'flex' : 'none';
+
+            if (t === 'cli') {
+                setTimeout(() => CLIController.inputEl.focus(), 10);
+            }
         }
 
-        // Execution Mock
-        function runCode() {
-            output.innerHTML = '<div style="color:var(--muted)">Preparing engine...</div>';
-            switchTab('output');
-            setTimeout(() => {
-                output.innerHTML = '';
-                const lines = editor.value.split('\n');
-                let vars = {};
-                lines.forEach(line => {
-                    const s = line.match(/say\s+\"(.*?)\"/);
-                    if(s) output.innerHTML += `<div class="console-line">${s[1]}</div>`;
-                    const sv = line.match(/say\s+([a-zA-Z_]\w*)/);
-                    if(sv && vars[sv[1]]) output.innerHTML += `<div class="console-line">${vars[sv[1]]}</div>`;
-                    const v = line.match(/set\s+([a-zA-Z_]\w*)\s+to\s+(.*)/);
-                    if(v) vars[v[1]] = v[2];
+        /**
+         * EAZE CLI CONTROLLER
+         * Ported from cli/index.js for browser environment
+         */
+        const CLIController = {
+            outputEl: null,
+            inputEl: null,
+            promptEl: null,
+            interpreter: null,
+            buffer: "",
+            history: [],
+            historyIndex: -1,
+            isWaitingForInput: false,
+            inputResolver: null,
+
+            init() {
+                this.outputEl = document.getElementById('cli-output');
+                this.inputEl = document.getElementById('cli-input');
+                this.promptEl = document.getElementById('cli-prompt');
+
+                const { Interpreter } = window.EazeEngine;
+                this.interpreter = new Interpreter();
+
+                // Setup Handlers
+                // Now using async inputHandler since we made the bundle async
+                this.interpreter.setInputHandler((message) => {
+                    return new Promise((resolve) => {
+                        this.appendLine(`  <span class="cli-secondary">${message}</span> `, 'ask-line', false);
+                        this.isWaitingForInput = true;
+                        this.inputResolver = resolve;
+                        this.inputEl.focus();
+                    });
                 });
-                if(!output.innerHTML) output.innerHTML = '<i>Program executed successfully.</i>';
-                varGrid.innerHTML = Object.entries(vars).map(([k,v]) => `<div><b>${k}</b>: <span style="color:var(--syn-number)">${v}</span></div>`).join('') || '<i>No active variables.</i>';
-            }, 400);
+
+                this.interpreter.setOutputHandler((value) => {
+                    this.appendLine(`  <span class="cli-success">→</span> ${value}`, 'output-line');
+                });
+
+                // Input listener
+                this.inputEl.addEventListener('keydown', (e) => this.handleKeyDown(e));
+
+                this.printWelcome();
+            },
+
+            appendLine(html, className = '', newline = true) {
+                const div = document.createElement('div');
+                if (className) div.className = className;
+                div.innerHTML = html;
+                this.outputEl.appendChild(div);
+                if (newline) this.outputEl.scrollTop = this.outputEl.scrollHeight;
+                return div;
+            },
+
+            printWelcome() {
+                const banner = [
+                    `<span class="cli-primary">  ███████╗ █████╗ ███████╗███████╗</span>`,
+                    `<span class="cli-primary">  ██╔════╝██╔══██╗██╔════╝██╔════╝</span>`,
+                    `<span class="cli-secondary">  █████╗  ███████║███████╗█████╗  </span>`,
+                    `<span class="cli-secondary">  ██╔══╝  ██╔══██║╚════██║██╔══╝  </span>`,
+                    `<span class="cli-accent">  ███████╗██║  ██║███████║███████╗</span>`,
+                    `<span class="cli-accent">  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝</span>`,
+                    ``,
+                    `<span class="cli-muted">  ┌──────────────────────────────────────┐</span>`,
+                    `<span class="cli-muted">  │          Eaze - v1.0.0               │</span>`,
+                    `<span class="cli-muted">  │    A Beginner-Friendly Language      │</span>`,
+                    `<span class="cli-muted">  └──────────────────────────────────────┘</span>`,
+                    ``,
+                    `<span class="cli-secondary">  Welcome to Eaze CLI!</span>`,
+                    `<span class="cli-muted">  Type </span><span class="cli-primary">"help"</span><span class="cli-muted"> for commands or </span><span class="cli-primary">"exit"</span><span class="cli-muted"> to reset.</span>`,
+                    ``
+                ];
+                banner.forEach(line => this.appendLine(line || '&nbsp;'));
+            },
+
+            printHelp() {
+                this.appendLine(`<span class="cli-accent">  ╔══════════════════════════════════════════════════════════════╗</span>`);
+                this.appendLine(`  <span class="cli-primary">EAZE COMMAND REFERENCE</span>`);
+                this.appendLine(`<span class="cli-accent">  ╠══════════════════════════════════════════════════════════════╣</span>`);
+
+                const cmds = [
+                    ["help", "Show this help menu"],
+                    ["vars", "Display all defined variables"],
+                    ["clear", "Clear the terminal"],
+                    ["exit", "Reset the environment"]
+                ];
+
+                cmds.forEach(([c, d]) => {
+                    this.appendLine(`  <span class="cli-primary">${c.padEnd(10)}</span> <span class="cli-muted">→ ${d}</span>`);
+                });
+
+                this.appendLine(`<span class="cli-accent">  ╚══════════════════════════════════════════════════════════════╝</span>`);
+            },
+
+            printVariables() {
+                const vars = Array.from(this.interpreter.globalEnv.variables.entries());
+                if (vars.length === 0) {
+                    this.appendLine(`<span class="cli-muted">  ℹ No variables defined yet</span>`);
+                    return;
+                }
+
+                this.appendLine(`<span class="cli-accent">  ╔══════════════════════════════════════════════════════════════╗</span>`);
+                this.appendLine(`  <span class="cli-primary">CURRENT VARIABLES</span>`);
+                this.appendLine(`<span class="cli-accent">  ╠══════════════════════════════════════════════════════════════╣</span>`);
+
+                vars.forEach(([k, v]) => {
+                    let display = typeof v === 'object' && v.isFunction ? `[Function: ${v.name}]` : JSON.stringify(v);
+                    this.appendLine(`  <span class="cli-secondary">${k.padEnd(12)}</span> <span class="cli-muted">→</span> <span class="cli-primary">${display}</span>`);
+                });
+
+                this.appendLine(`<span class="cli-accent">  ╚══════════════════════════════════════════════════════════════╝</span>`);
+            },
+
+            async handleKeyDown(e) {
+                if (e.key === 'Enter') {
+                    const input = this.inputEl.value;
+                    this.inputEl.value = '';
+
+                    if (this.isWaitingForInput) {
+                        const lastLine = this.outputEl.lastElementChild;
+                        if (lastLine) lastLine.innerHTML += `<span class="cli-primary">${input}</span>`;
+                        this.isWaitingForInput = false;
+                        if (this.inputResolver) this.inputResolver(input);
+                        return;
+                    }
+
+                    this.appendLine(`<span class="cli-secondary">${this.buffer ? '..' : '>'}</span> ${input}`);
+
+                    if (input.trim() === 'clear') {
+                        this.outputEl.innerHTML = '';
+                        this.printWelcome();
+                        return;
+                    }
+                    if (input.trim() === 'help') {
+                        this.printHelp();
+                        return;
+                    }
+                    if (input.trim() === 'vars') {
+                        this.printVariables();
+                        return;
+                    }
+                    if (input.trim() === 'exit') {
+                        const { Interpreter } = window.EazeEngine;
+                        this.interpreter = new Interpreter();
+                        // Re-bind async input handler
+                        this.interpreter.setInputHandler((message) => {
+                            return new Promise((resolve) => {
+                                this.appendLine(`  <span class="cli-secondary">${message}</span> `, 'ask-line', false);
+                                this.isWaitingForInput = true;
+                                this.inputResolver = resolve;
+                                this.inputEl.focus();
+                            });
+                        });
+                        this.interpreter.setOutputHandler((value) => {
+                            this.appendLine(`  <span class="cli-success">→</span> ${value}`, 'output-line');
+                        });
+                        this.appendLine(`<span class="cli-warning">Environment reset.</span>`);
+                        return;
+                    }
+
+                    this.buffer += (this.buffer ? '\n' : '') + input;
+
+                    if (this.isStatementComplete(this.buffer)) {
+                        const codeToRun = this.buffer;
+                        this.buffer = "";
+                        this.promptEl.innerText = ">";
+                        await this.execute(codeToRun);
+                    } else {
+                        this.promptEl.innerText = "..";
+                    }
+                }
+            },
+
+            isStatementComplete(code) {
+                const blockOpeners = /\b(repeat|while|if|define)\b/g;
+                const blockClosers = /\bend\b/g;
+                const openers = (code.match(blockOpeners) || []).length;
+                const closers = (code.match(blockClosers) || []).length;
+                return openers === closers;
+            },
+
+            async execute(code) {
+                const { Lexer, Parser } = window.EazeEngine;
+                try {
+                    const lexer = new Lexer(code);
+                    const tokens = lexer.tokenize();
+                    const parser = new Parser(tokens);
+                    const ast = parser.parse();
+
+                    await this.interpreter.run(ast);
+                } catch (err) {
+                    this.appendLine(`<span class="cli-error">✖ ${err.toString()}</span>`);
+                }
+            }
+        };
+
+        function runInCLI() {
+            switchTab('cli');
+            const code = editor.value;
+            const filename = appState.files[appState.activeIdx].name;
+            CLIController.appendLine(`<span class="cli-primary">▶</span> Running file: <span class="cli-secondary">${filename}</span>`);
+            CLIController.execute(code).then(() => {
+                CLIController.appendLine('');
+                CLIController.inputEl.focus();
+            });
+        }
+
+        function renderVisualization(trace, code) {
+            vizPane.innerHTML = '';
+
+            if (!Array.isArray(trace) || trace.length === 0) {
+                const hint = document.createElement('div');
+                hint.className = 'viz-hint';
+                hint.textContent = 'No steps recorded yet. Click ▶ Run to see what your code is doing.';
+                vizPane.appendChild(hint);
+                return;
+            }
+
+            const wrap = document.createElement('div');
+            wrap.className = 'viz-wrap';
+
+            const steps = document.createElement('div');
+            steps.className = 'viz-steps';
+
+            const detail = document.createElement('div');
+            detail.className = 'viz-detail';
+
+            wrap.appendChild(steps);
+            wrap.appendChild(detail);
+            vizPane.appendChild(wrap);
+
+            const lines = (code || '').split('\n');
+            const stepEls = [];
+            let activeIdx = -1;
+
+            function badgeClass(kind) {
+                if (kind === 'set') return 'set';
+                if (kind === 'say' || kind === 'output') return 'say';
+                if (kind === 'if') return 'if';
+                if (kind === 'repeat' || kind === 'while' || kind === 'loop') return 'loop';
+                if (kind === 'call') return 'call';
+                return 'misc';
+            }
+
+            // Kid-friendly explanation for each keyword/kind.
+            // This is intentionally "hardcoded English" so beginners can understand.
+            function explainForKids(ev) {
+                const kind = ev && ev.kind ? ev.kind : 'step';
+                const d = (ev && ev.data) ? ev.data : {};
+
+                if (kind === 'say') {
+                    const v = d.value || '';
+                    if (d.verb === 'show') {
+                        return `This line shows on the screen the value ${v}.`;
+                    }
+                    // Example: say "Zaid" -> This line shows on the screen text "Zaid".
+                    return `This line shows on the screen text ${v}.`;
+                }
+
+                if (kind === 'set') {
+                    const target = d.name || d.target || 'a variable';
+                    const after = d.after || 'a value';
+                    const before = d.before;
+
+                    if (d.scope === 'array') {
+                        if (typeof d.index === 'number') {
+                            return `This line changes the list item at index ${d.index} to ${after}.`;
+                        }
+                        return `This line changes one item inside a list: ${target} becomes ${after}.`;
+                    }
+
+                    if (before === '(new)') {
+                        return `This line makes a new variable called ${target} and puts ${after} inside it.`;
+                    }
+
+                    if (typeof before === 'string' && before !== after) {
+                        return `This line changes ${target} from ${before} to ${after}.`;
+                    }
+
+                    return `This line saves ${after} into the variable ${target}.`;
+                }
+
+                if (kind === 'if') {
+                    const expr = d.expr || 'a condition';
+                    const truth = d.condition ? 'true' : 'false';
+
+                    if (d.condition) {
+                        return `This line checks if ${expr}. It is ${truth}, so the lines under the IF will run.`;
+                    }
+
+                    if (d.hasElse) {
+                        return `This line checks if ${expr}. It is ${truth}, so the ELSE lines will run.`;
+                    }
+
+                    return `This line checks if ${expr}. It is ${truth}, so the IF lines are skipped.`;
+                }
+
+                if (kind === 'repeat') {
+                    // There are two repeat events: "Repeat N times" and "Done repeating".
+                    if (typeof d.times === 'number') {
+                        if ((ev.message || '').toLowerCase().includes('done')) {
+                            return `This means the repeat loop is finished. It ran ${d.times} times.`;
+                        }
+                        return `This line repeats the lines under it ${d.times} times.`;
+                    }
+                    return `This line starts (or ends) a repeat loop.`;
+                }
+
+                if (kind === 'loop') {
+                    // Used for each loop turn.
+                    if (typeof d.i === 'number' && typeof d.times === 'number') {
+                        return `This is loop ${d.i} out of ${d.times}. The repeated lines run again now.`;
+                    }
+                    if (typeof d.iter === 'number') {
+                        return `This is time ${d.iter} in the while loop. The loop runs again.`;
+                    }
+                    return `This is another turn of a loop.`;
+                }
+
+                if (kind === 'while') {
+                    if (typeof d.expr === 'string' && d.expr.length) {
+                        return `This line starts a WHILE loop. It keeps repeating while ${d.expr} is true.`;
+                    }
+                    if (typeof d.iter === 'number') {
+                        return `This means the while loop is finished. It ran ${d.iter} times.`;
+                    }
+                    return `This line is part of a while loop.`;
+                }
+
+                if (kind === 'ask') {
+                    const prompt = d.prompt || 'a question';
+                    const name = d.identifier || 'a variable';
+                    return `This line asks the user ${prompt} and saves the answer into ${name}.`;
+                }
+
+                if (kind === 'define') {
+                    const name = d.name || 'a function';
+                    const params = Array.isArray(d.params) ? d.params : [];
+                    if (params.length) {
+                        return `This line teaches the computer a new function called ${name}. It expects: ${params.join(', ')}.`;
+                    }
+                    return `This line teaches the computer a new function called ${name}.`;
+                }
+
+                if (kind === 'call') {
+                    const name = d.name || 'a function';
+                    const args = Array.isArray(d.args) ? d.args : [];
+                    if (args.length) {
+                        return `This line runs the function ${name} using these inputs: ${args.join(', ')}.`;
+                    }
+                    return `This line runs the function ${name}.`;
+                }
+
+                if (kind === 'return') {
+                    const value = d.value || 'a value';
+                    return `This line sends back ${value} from the function.`;
+                }
+
+                if (kind === 'start') {
+                    return 'The program starts running.';
+                }
+
+                if (kind === 'end') {
+                    return 'The program finished running.';
+                }
+
+                if (kind === 'truncated') {
+                    return 'Your program made too many steps to show. Try a smaller loop.';
+                }
+
+                if (kind === 'error') {
+                    return 'The program stopped because something went wrong.';
+                }
+
+                return 'The program did a step.';
+            }
+
+            function safeLineSnippet(line) {
+                if (!line || line < 1 || line > lines.length) return '';
+                return lines[line - 1];
+            }
+
+            function renderKVCard(title, entries) {
+                const card = document.createElement('div');
+                card.className = 'viz-detail-card';
+
+                const h = document.createElement('div');
+                h.className = 'viz-detail-title';
+                h.textContent = title;
+
+                const grid = document.createElement('div');
+                grid.className = 'viz-kv';
+
+                if (!entries || entries.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.className = 'viz-hint';
+                    empty.textContent = 'Nothing here yet.';
+                    grid.appendChild(empty);
+                } else {
+                    entries.forEach(({ k, v }) => {
+                        const row = document.createElement('div');
+                        const kb = document.createElement('b');
+                        kb.textContent = k;
+                        const vb = document.createElement('span');
+                        vb.textContent = v;
+                        row.appendChild(kb);
+                        row.appendChild(document.createTextNode(': '));
+                        row.appendChild(vb);
+                        grid.appendChild(row);
+                    });
+                }
+
+                card.appendChild(h);
+                card.appendChild(grid);
+                return card;
+            }
+
+            function setActive(idx) {
+                if (idx < 0 || idx >= trace.length) return;
+                if (activeIdx === idx) return;
+                activeIdx = idx;
+
+                stepEls.forEach((el, i) => el.classList.toggle('active', i === idx));
+
+                const ev = trace[idx];
+                detail.innerHTML = '';
+
+                const topCard = document.createElement('div');
+                topCard.className = 'viz-detail-card';
+
+                const title = document.createElement('div');
+                title.className = 'viz-detail-title';
+                title.textContent = 'What happened';
+
+                const msg = document.createElement('div');
+                msg.style.fontSize = '13px';
+                msg.style.lineHeight = '1.4';
+
+                const explain = document.createElement('div');
+                explain.style.fontWeight = '800';
+                explain.textContent = explainForKids(ev);
+
+                const raw = document.createElement('div');
+                raw.style.marginTop = '6px';
+                raw.style.fontSize = '12px';
+                raw.style.color = 'var(--muted)';
+                raw.textContent = ev.message ? `From your code: ${ev.message}` : '';
+
+                msg.appendChild(explain);
+                if (raw.textContent) msg.appendChild(raw);
+
+                const meta = document.createElement('div');
+                meta.style.marginTop = '8px';
+                meta.style.fontFamily = 'var(--font-mono)';
+                meta.style.fontSize = '12px';
+                meta.style.color = 'var(--muted)';
+
+                const parts = [];
+                if (typeof ev.kind === 'string') parts.push(`kind: ${ev.kind}`);
+                if (ev.loc && typeof ev.loc.line === 'number') parts.push(`line: ${ev.loc.line}`);
+                if (ev.loc && typeof ev.loc.column === 'number') parts.push(`col: ${ev.loc.column}`);
+                if (typeof ev.depth === 'number') parts.push(`depth: ${ev.depth}`);
+                meta.textContent = parts.join(' • ');
+
+                topCard.appendChild(title);
+                topCard.appendChild(msg);
+                if (meta.textContent) topCard.appendChild(meta);
+                detail.appendChild(topCard);
+
+                if (ev.loc && typeof ev.loc.line === 'number') {
+                    const snippet = safeLineSnippet(ev.loc.line);
+                    if (snippet.trim().length) {
+                        detail.appendChild(renderKVCard('Code line', [{ k: `L${ev.loc.line}`, v: snippet.trim() }]));
+                    }
+                }
+
+                const globals = Array.isArray(ev.globals) ? ev.globals : [];
+                detail.appendChild(renderKVCard('Variables (global)', globals.map(x => ({ k: x.name, v: x.value }))));
+
+                const outTail = Array.isArray(ev.outputTail) ? ev.outputTail : [];
+                if (outTail.length) {
+                    detail.appendChild(renderKVCard('Output so far', outTail.map((v, i) => ({ k: String(i + 1), v }))));
+                }
+            }
+
+            trace.forEach((ev, idx) => {
+                const row = document.createElement('div');
+                row.className = 'viz-step';
+                row.style.marginLeft = `${Math.min(36, (ev.depth || 0) * 12)}px`;
+
+                const top = document.createElement('div');
+                top.className = 'viz-step-top';
+
+                const left = document.createElement('div');
+                left.style.display = 'flex';
+                left.style.alignItems = 'center';
+                left.style.gap = '8px';
+
+                const badge = document.createElement('span');
+                badge.className = `viz-badge ${badgeClass(ev.kind)}`;
+                badge.textContent = (ev.kind || 'step').toUpperCase();
+
+                const title = document.createElement('div');
+                title.className = 'viz-step-title';
+                title.textContent = `Step ${idx + 1}`;
+
+                left.appendChild(badge);
+                left.appendChild(title);
+
+                const meta = document.createElement('div');
+                meta.className = 'viz-step-meta';
+                meta.textContent = ev.loc && typeof ev.loc.line === 'number' ? `Line ${ev.loc.line}` : '';
+
+                top.appendChild(left);
+                top.appendChild(meta);
+
+                const msg = document.createElement('div');
+                msg.className = 'viz-step-msg';
+                msg.textContent = ev.message || '';
+
+                row.appendChild(top);
+                if (msg.textContent) row.appendChild(msg);
+
+                row.addEventListener('click', () => {
+                    setActive(idx);
+                });
+
+                steps.appendChild(row);
+                stepEls.push(row);
+            });
+
+            setActive(0);
+        }
+
+        function renderVisualizationError(error) {
+            vizPane.innerHTML = '';
+            const d = document.createElement('div');
+            d.style.color = 'oklch(80% 0.2 0)';
+            d.style.fontFamily = 'var(--font-mono)';
+            d.style.whiteSpace = 'pre-wrap';
+            d.textContent = error && error.toString ? error.toString() : String(error);
+            vizPane.appendChild(d);
+        }
+
+        function clearOutput() {
+            output.innerHTML = '<div style="color: var(--muted); font-style: italic;">Program output will show here...</div>';
+            varGrid.innerHTML = '<div style="color: var(--muted); font-style: italic;">No variables tracked yet.</div>';
+            vizPane.innerHTML = '<div style="color: var(--muted); font-style: italic;">Run your code to see a step-by-step visualization.</div>';
+        }
+
+        // Execution with Eaze Engine
+        async function runCode() {
+            output.innerHTML = '<div style="color:var(--muted)">Running code...</div>';
+            varGrid.innerHTML = '<div style="color: var(--muted); font-style: italic;">Updating variables...</div>';
+            vizPane.innerHTML = '<div style="color: var(--muted); font-style: italic;">Tracing your code...</div>';
+            switchTab('output');
+
+            setTimeout(async () => {
+                output.innerHTML = '';
+                varGrid.innerHTML = '';
+
+                try {
+                    // Get code from editor
+                    const code = editor.value;
+
+                    // Verify engine is loaded
+                    if (!window.EazeEngine) {
+                        throw new Error('Eaze Engine not loaded');
+                    }
+
+                    const { Lexer, Parser, Interpreter } = window.EazeEngine;
+
+                    // Execute the code
+                    const lexer = new Lexer(code);
+                    const tokens = lexer.tokenize();
+
+                    const parser = new Parser(tokens);
+                    const ast = parser.parse();
+
+                    const interpreter = new Interpreter();
+                    if (interpreter.setTraceLimit) {
+                        interpreter.setTraceLimit(appState.traceLimit);
+                    }
+                    const results = await interpreter.run(ast);
+                    // Display output
+                    if (results.length === 0) {
+                        output.innerHTML = '<i style="color:var(--muted)">Program executed successfully.</i>';
+                    } else {
+                        output.innerHTML = '';
+                        results.forEach(result => {
+                            const line = document.createElement('div');
+                            line.className = 'console-line';
+                            line.textContent = result;
+                            output.appendChild(line);
+                        });
+                    }
+
+                    // Display variables
+                    const vars = interpreter.globalEnv.variables;
+                    if (vars.size > 0) {
+                        varGrid.innerHTML = '';
+                        vars.forEach((value, name) => {
+                            const varLine = document.createElement('div');
+                            const nameSpan = document.createElement('b');
+                            nameSpan.textContent = name;
+                            const valueSpan = document.createElement('span');
+                            valueSpan.style.color = 'var(--syn-number)';
+                            // (Functions can contain non-JSON-safe fields; keep it kid-friendly)
+                            try {
+                                valueSpan.textContent = JSON.stringify(value);
+                            } catch {
+                                valueSpan.textContent = String(value);
+                            }
+                            varLine.appendChild(nameSpan);
+                            varLine.appendChild(document.createTextNode(': '));
+                            varLine.appendChild(valueSpan);
+                            varGrid.appendChild(varLine);
+                        });
+                    } else {
+                        varGrid.innerHTML = '<i style="color:var(--muted)">No active variables.</i>';
+                    }
+
+                    // Visualize execution
+                    renderVisualization(interpreter.trace || [], code);
+
+                } catch (error) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.style.color = 'oklch(80% 0.2 0)';
+                    errorDiv.style.fontFamily = 'var(--font-mono)';
+                    errorDiv.style.whiteSpace = 'pre-wrap';
+                    errorDiv.style.wordWrap = 'break-word';
+                    errorDiv.textContent = error.toString();
+                    output.innerHTML = '';
+                    output.appendChild(errorDiv);
+                    renderVisualizationError(error);
+                    console.error(error);
+                }
+            }, 100);
         }
 
         function setupResizer() {
@@ -761,12 +2060,228 @@
             }, 700);
         }
 
+        function showConfirmModal({ title, message, confirmText, cancelText, onConfirm, onCancel }) {
+            const overlay = document.getElementById('modal-overlay');
+            const body = document.getElementById('modal-body');
+            const titleEl = document.getElementById('modal-title');
+
+            overlay.style.display = 'flex';
+            titleEl.textContent = title || 'Confirm';
+
+            body.innerHTML = `
+                <div style="padding: 10px 0;">
+                    <p class="modal-message">${message}</p>
+                    <div class="modal-actions">
+                        <button class="btn" id="confirm-cancel">${cancelText || 'Cancel'}</button>
+                        <button class="btn btn-primary" id="confirm-ok">${confirmText || 'Confirm'}</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('confirm-ok').onclick = onConfirm;
+            document.getElementById('confirm-cancel').onclick = onCancel || closeModal;
+        }
+
+        function showInputModal({ title, message, placeholder, defaultValue, confirmText, onConfirm }) {
+            const overlay = document.getElementById('modal-overlay');
+            const body = document.getElementById('modal-body');
+            const titleEl = document.getElementById('modal-title');
+
+            overlay.style.display = 'flex';
+            titleEl.textContent = title || 'Input';
+
+            body.innerHTML = `
+                <div style="padding: 10px 0;">
+                    <p class="modal-message" style="margin-bottom: 16px;">${message}</p>
+                    <input type="text" class="template-search" id="modal-input" placeholder="${placeholder || ''}" value="${defaultValue || ''}" style="margin-bottom: 24px;">
+                    <div class="modal-actions">
+                        <button class="btn" onclick="closeModal()">Cancel</button>
+                        <button class="btn btn-primary" id="modal-confirm-btn">${confirmText || 'OK'}</button>
+                    </div>
+                </div>
+            `;
+
+            const input = document.getElementById('modal-input');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+
+            const handleConfirm = () => {
+                const val = input.value.trim();
+                if (val) {
+                    onConfirm(val);
+                    closeModal();
+                }
+            };
+
+            confirmBtn.onclick = handleConfirm;
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') handleConfirm();
+                if (e.key === 'Escape') closeModal();
+            };
+
+            setTimeout(() => input.focus(), 10);
+        }
+
         function showModal(type) {
             const overlay = document.getElementById('modal-overlay');
             const body = document.getElementById('modal-body');
+            const titleEl = document.getElementById('modal-title');
             overlay.style.display = 'flex';
 
+            if(type === 'help') {
+                titleEl.textContent = 'Eaze Documentation';
+                // Set modal width to be wider for help
+                document.querySelector('.modal').style.maxWidth = '1000px';
+
+                body.innerHTML = `
+                    <div class="help-container">
+                        <div class="help-sidebar">
+                            <div class="help-nav-item active" onclick="switchHelpSection('intro')">Introduction</div>
+                            <div class="help-nav-item" onclick="switchHelpSection('syntax')">Variables & Syntax</div>
+                            <div class="help-nav-item" onclick="switchHelpSection('types')">Data Types</div>
+                            <div class="help-nav-item" onclick="switchHelpSection('operators')">Operators</div>
+                            <div class="help-nav-item" onclick="switchHelpSection('io')">Input & Output</div>
+                            <div class="help-nav-item" onclick="switchHelpSection('conditionals')">Conditionals</div>
+                            <div class="help-nav-item" onclick="switchHelpSection('loops')">Loops</div>
+                            <div class="help-nav-item" onclick="switchHelpSection('functions')">Functions</div>
+                            <div class="help-nav-item" onclick="switchHelpSection('arrays')">Arrays</div>
+                        </div>
+                        <div class="help-content">
+                            <section id="help-intro" class="help-section active">
+                                <h1>Introduction</h1>
+                                <p>Eaze is a beginner-friendly, English-like programming language. By replacing cryptic symbols with intuitive keywords, Eaze lets you focus on logic rather than syntax.</p>
+                                <h3>Why Eaze?</h3>
+                                <ul>
+                                    <li><strong>English-like Syntax:</strong> Uses patterns like <code>set</code>, <code>show</code>, <code>ask</code>, <code>repeat</code>.</li>
+                                    <li><strong>Unified Assignment:</strong> No more confusion between <code>=</code> and <code>==</code>.</li>
+                                    <li><strong>AI Powered:</strong> Built-in support for explanation and debugging.</li>
+                                </ul>
+                                <h3>A Quick Taste</h3>
+                                <pre><code>set name to "Explorer"
+show "Hello, " + name
+
+repeat 3 times
+  show "Learning Eaze is fun!"
+end</code></pre>
+                            </section>
+
+                            <section id="help-syntax" class="help-section">
+                                <h1>Variables & Syntax</h1>
+                                <p>Variables are containers for storing data. You don't need to declare types.</p>
+                                <h3>Variable Assignment</h3>
+                                <pre><code>set score to 100
+set player to "Alice"</code></pre>
+                                <h3>Reassignment</h3>
+                                <pre><code>set x to 5
+set x to x + 10</code></pre>
+                            </section>
+
+                            <section id="help-types" class="help-section">
+                                <h1>Data Types</h1>
+                                <h3>1. Numbers</h3>
+                                <pre><code>set age to 25
+set price to 19.99</code></pre>
+                                <h3>2. Strings</h3>
+                                <pre><code>set name to "Eaze"</code></pre>
+                                <h3>3. Arrays</h3>
+                                <pre><code>set fruits to ["Apple", "Banana"]</code></pre>
+                            </section>
+
+                            <section id="help-operators" class="help-section">
+                                <h1>Operators</h1>
+                                <h3>Arithmetic</h3>
+                                <table>
+                                    <tr><th>Op</th><th>Meaning</th></tr>
+                                    <tr><td>+</td><td>Addition</td></tr>
+                                    <tr><td>-</td><td>Subtraction</td></tr>
+                                    <tr><td>*</td><td>Multiplication</td></tr>
+                                    <tr><td>/</td><td>Division</td></tr>
+                                </table>
+                                <h3>Logical</h3>
+                                <ul>
+                                    <li><code>and</code>, <code>or</code>, <code>not</code></li>
+                                </ul>
+                            </section>
+
+                            <section id="help-io" class="help-section">
+                                <h1>Input & Output</h1>
+                                <h3>Output: <code>show</code> or <code>say</code></h3>
+                                <pre><code>show "Hello"</code></pre>
+                                <h3>Input: <code>ask ... into</code></h3>
+                                <pre><code>ask "Name?" into user_name</code></pre>
+                            </section>
+
+                            <section id="help-conditionals" class="help-section">
+                                <h1>Conditionals</h1>
+                                <h3>If Statement</h3>
+                                <pre><code>if age >= 18
+  show "Adult"
+end</code></pre>
+                                <h3>If-Else</h3>
+                                <pre><code>if score >= 50
+  show "Pass"
+else
+  show "Fail"
+end</code></pre>
+                            </section>
+
+                            <section id="help-loops" class="help-section">
+                                <h1>Loops</h1>
+                                <h3>Repeat Loop</h3>
+                                <pre><code>repeat 5 times
+  show "Hi"
+end</code></pre>
+                                <h3>While Loop</h3>
+                                <pre><code>while count <= 5
+  show count
+  set count to count + 1
+end</code></pre>
+                            </section>
+
+                            <section id="help-functions" class="help-section">
+                                <h1>Functions</h1>
+                                <pre><code>define greet(name)
+  show "Hello, " + name
+end
+
+call greet("Alice")</code></pre>
+                            </section>
+
+                            <section id="help-arrays" class="help-section">
+                                <h1>Arrays</h1>
+                                <pre><code>set items to ["A", "B", "C"]
+show items[1] # Output: B
+set items[0] to "Z"</code></pre>
+                            </section>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Reset modal width for other types
+            document.querySelector('.modal').style.maxWidth = '600px';
+
+            if(type === 'templates') {
+                titleEl.textContent = 'Templates';
+                body.innerHTML = `
+                    <input class="template-search" id="template-search" placeholder="Search templates (loop, if, ask, function...)" autocomplete="off">
+                    <div class="template-grid" id="template-list"></div>
+                    <div class="template-hint">Tip: Click <b>Use</b> to replace the current file, or <b>New file</b> to create a fresh file.</div>
+                `;
+
+                const inp = document.getElementById('template-search');
+                inp.addEventListener('input', () => {
+                    renderTemplatesList(inp.value);
+                });
+
+                renderTemplatesList('');
+                inp.focus();
+                return;
+            }
+
             if(type === 'settings') {
+                titleEl.textContent = 'Settings';
+                document.querySelector('.modal').style.maxWidth = '600px';
                 body.innerHTML = `
                     <div class="settings-section">
                         <div class="settings-title">⚙️ Appearance</div>
@@ -779,6 +2294,24 @@
                                 </label>
                             </div>
                         </div>
+                        <div class="settings-row">
+                            <span class="settings-label">Layout Density</span>
+                            <div class="settings-value">
+                                <select onchange="setSetting('layoutDensity', this.value)">
+                                    <option value="spacious" ${appState.layoutDensity === 'spacious' ? 'selected' : ''}>Spacious</option>
+                                    <option value="compact" ${appState.layoutDensity === 'compact' ? 'selected' : ''}>Compact</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <span class="settings-label">Sidebar Position</span>
+                            <div class="settings-value">
+                                <select onchange="setSetting('sidebarPosition', this.value)">
+                                    <option value="left" ${appState.sidebarPosition === 'left' ? 'selected' : ''}>Left</option>
+                                    <option value="right" ${appState.sidebarPosition === 'right' ? 'selected' : ''}>Right</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="settings-section">
@@ -786,7 +2319,7 @@
                         <div class="settings-row">
                             <span class="settings-label">Font Size</span>
                             <div class="settings-value">
-                                <input type="range" min="12" max="24" value="${appState.fontSize}" class="range-slider" oninput="setSetting('fontSize', parseInt(this.value))">
+                                <input type="range" min="12" max="24" value="${appState.fontSize}" class="range-slider" oninput="setSetting('fontSize', parseInt(this.value)); this.nextElementSibling.textContent = this.value + 'px'">
                                 <span class="value-display">${appState.fontSize}px</span>
                             </div>
                         </div>
@@ -810,12 +2343,50 @@
                                 </label>
                             </div>
                         </div>
+                        <div class="settings-row">
+                            <span class="settings-label">Word Wrap</span>
+                            <div class="settings-value">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ${appState.wordWrap ? 'checked' : ''} onchange="setSetting('wordWrap', this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <span class="settings-label">Tab Size</span>
+                            <div class="settings-value">
+                                <select onchange="setSetting('tabSize', parseInt(this.value))">
+                                    <option value="2" ${appState.tabSize === 2 ? 'selected' : ''}>2 spaces</option>
+                                    <option value="4" ${appState.tabSize === 4 ? 'selected' : ''}>4 spaces</option>
+                                    <option value="8" ${appState.tabSize === 8 ? 'selected' : ''}>8 spaces</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="settings-section">
-                        <div class="settings-title">💾 Auto-Save</div>
+                        <div class="settings-title">🚀 Execution</div>
                         <div class="settings-row">
-                            <span class="settings-label">Auto-Save (1s delay)</span>
+                            <span class="settings-label">Live Mode (Auto-run)</span>
+                            <div class="settings-value">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" ${appState.liveMode ? 'checked' : ''} onchange="setSetting('liveMode', this.checked)">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <span class="settings-label">Trace Step Limit</span>
+                            <div class="settings-value">
+                                <input type="number" value="${appState.traceLimit}" style="width: 80px;" onchange="setSetting('traceLimit', parseInt(this.value))">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="settings-title">💾 System</div>
+                        <div class="settings-row">
+                            <span class="settings-label">Auto-Save</span>
                             <div class="settings-value">
                                 <label class="toggle-switch">
                                     <input type="checkbox" ${appState.autoSave ? 'checked' : ''} onchange="setSetting('autoSave', this.checked)">
@@ -823,15 +2394,11 @@
                                 </label>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="settings-section">
-                        <div class="settings-title">🎨 Color Theme</div>
-                        <div class="color-swatches">
-                            <div class="swatch ${appState.colorTheme === 'pastel' ? 'active' : ''}" style="background: linear-gradient(135deg, #d8c5ff 0%, #c4efd9 100%);" onclick="setSetting('colorTheme', 'pastel')" title="Pastel"></div>
-                            <div class="swatch ${appState.colorTheme === 'vibrant' ? 'active' : ''}" style="background: linear-gradient(135deg, #ff00ff 0%, #00ffff 100%);" onclick="setSetting('colorTheme', 'vibrant')" title="Vibrant"></div>
-                            <div class="swatch ${appState.colorTheme === 'cool' ? 'active' : ''}" style="background: linear-gradient(135deg, #0099ff 0%, #00ff99 100%);" onclick="setSetting('colorTheme', 'cool')" title="Cool"></div>
-                            <div class="swatch ${appState.colorTheme === 'warm' ? 'active' : ''}" style="background: linear-gradient(135deg, #ffaa00 0%, #ff4500 100%);" onclick="setSetting('colorTheme', 'warm')" title="Warm"></div>
+                        <div class="settings-row">
+                            <button class="btn" style="width: 100%; justify-content: center;" onclick="exportData()">📤 Export All Data (.json)</button>
+                        </div>
+                        <div class="settings-row" style="background: oklch(90% 0.1 20);">
+                            <button class="btn" style="width: 100%; justify-content: center; color: white; background: oklch(50% 0.2 20); border: none;" onclick="resetAll()">🧨 Reset Everything</button>
                         </div>
                     </div>
 
@@ -850,10 +2417,48 @@
             }
         }
 
+        function exportData() {
+            const data = {
+                appState: { ...appState, editHistory: [] },
+                timestamp: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `eaze-playground-backup-${new Date().getTime()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function resetAll() {
+            showConfirmModal({
+                title: 'Reset Everything?',
+                message: 'This will delete ALL your files and reset all settings to default. This cannot be undone! Are you absolutely sure?',
+                confirmText: 'Reset ALL',
+                cancelText: 'Cancel',
+                onConfirm: () => {
+                    localStorage.clear();
+                    window.location.reload();
+                }
+            });
+        }
+
         function setSetting(key, value) {
             appState[key] = value;
             localStorage.setItem('eaze_' + key, value);
             applySettings();
+        }
+
+        function switchHelpSection(sectionId) {
+            document.querySelectorAll('.help-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.help-nav-item').forEach(n => n.classList.remove('active'));
+
+            const targetSection = document.getElementById('help-' + sectionId);
+            const targetNav = document.querySelector(`.help-nav-item[onclick*="'${sectionId}'"]`);
+
+            if (targetSection) targetSection.classList.add('active');
+            if (targetNav) targetNav.classList.add('active');
         }
 
         function closeModal(event) {

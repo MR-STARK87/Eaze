@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eaze Documentation — Simple, English-like Programming</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-sidebar: #f9f9f8;
+            --bg-main: #ffffff;
+            --text-primary: #1d1d1b;
+            --text-secondary: #666665;
+            --accent: #d97757;
+            --border: #e5e5e4;
+            --code-bg: #f5f5f4;
+            --sidebar-width: 280px;
+            --max-width: 800px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* App Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            z-index: 100;
+        }
+
+        .sidebar-logo {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 32px;
+            padding-left: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+
+        .sidebar-logo span {
+            color: var(--accent);
+        }
+
+        .nav-group {
+            margin-bottom: 24px;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            padding-left: 12px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover {
+            background-color: #f1f1ef;
+        }
+
+        .nav-item.active {
+            background-color: #ececeb;
+            font-weight: 500;
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 60px 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .content-inner {
+            width: 100%;
+            max-width: var(--max-width);
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 32px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            font-size: 1.05rem;
+            color: #373735;
+        }
+
+        ul, ol {
+            margin-bottom: 16px;
+            margin-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            font-weight: 600;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #24292e;
+        }
+
+        p code {
+            background-color: var(--code-bg);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            border: 1px solid var(--border);
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: white;
+            border: 1px solid var(--border);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        pre:hover .copy-btn {
+            opacity: 1;
+        }
+
+        /* Callouts */
+        .callout {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border-left: 4px solid var(--accent);
+            background-color: #fff9f6;
+        }
+
+        .callout.info {
+            border-left-color: #3b82f6;
+            background-color: #f0f7ff;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+            background-color: var(--bg-sidebar);
+        }
+
+        /* Syntax Highlighting (Simulated) */
+        .token-keyword { color: #d73a49; font-weight: 500; }
+        .token-string { color: #032f62; }
+        .token-comment { color: #6a737d; font-style: italic; }
+        .token-number { color: #005cc5; }
+        .token-fn { color: #6f42c1; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 40px 20px;
+            }
+            .mobile-header {
+                display: flex;
+            }
+        }
+
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            padding: 0 16px;
+            z-index: 101;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        /* Sections */
+        section {
+            display: none;
+        }
+
+        section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <button class="menu-toggle" id="menuToggle">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div style="font-weight: 600; margin-left: 8px;">Eaze Docs</div>
+    </div>
+
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="24" height="24" rx="4" fill="#d97757"/>
+                    <path d="M7 17V7H17V9H9V11H15V13H9V15H17V17H7Z" fill="white"/>
+                </svg>
+                Eaze<span>Docs</span>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label">Getting Started</div>
+                <a href="#intro" class="nav-item active" data-section="intro">Introduction</a>
+                <a href="#setup" class="nav-item" data-section="setup">Setup & Usage</a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label">Language Basics</div>
+                <a href="#syntax" class="nav-item" data-section="syntax">Variables & Syntax</a>
+                <a href="#types" class="nav-item" data-section="types">Data Types</a>
+                <a href="#operators" class="nav-item" data-section="operators">Operators</a>
+                <a href="#io" class="nav-item" data-section="io">Input & Output</a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label">Control Flow</div>
+                <a href="#conditionals" class="nav-item" data-section="conditionals">Conditionals</a>
+                <a href="#loops" class="nav-item" data-section="loops">Loops</a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label">Advanced</div>
+                <a href="#functions" class="nav-item" data-section="functions">Functions</a>
+                <a href="#arrays" class="nav-item" data-section="arrays">Arrays</a>
+                <a href="#ai" class="nav-item" data-section="ai">AI Integration</a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label">Examples</div>
+                <a href="#examples" class="nav-item" data-section="examples">Sample Programs</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-inner">
+                
+                <!-- Introduction -->
+                <section id="intro-section" class="active">
+                    <h1>Introduction</h1>
+                    <p>Eaze is a beginner-friendly, English-like programming language designed to make coding accessible to everyone. By replacing cryptic symbols with intuitive keywords, Eaze lets you focus on logic rather than syntax.</p>
+                    
+                    <div class="callout">
+                        <strong>Philosophy:</strong> Eaze prioritizes readability and simplicity. "set x to 5" is easier to understand than "int x = 5;" for someone starting their journey.
+                    </div>
+
+                    <h3>Why Eaze?</h3>
+                    <ul>
+                        <li><strong>English-like Syntax:</strong> Uses natural language patterns (<code>set</code>, <code>show</code>, <code>ask</code>, <code>repeat</code>).</li>
+                        <li><strong>Unified Assignment:</strong> No more confusion between <code>=</code> and <code>==</code> for beginners.</li>
+                        <li><strong>AI Powered:</strong> Built-in support for code explanation, debugging, and conversion to JavaScript.</li>
+                        <li><strong>Minimal Friction:</strong> No boilerplate code required to get started.</li>
+                    </ul>
+
+                    <h3>A Quick Taste</h3>
+                    <pre><code class="language-eaze"><span class="token-comment"># This is an Eaze program</span>
+<span class="token-keyword">set</span> name <span class="token-keyword">to</span> <span class="token-string">"Explorer"</span>
+<span class="token-keyword">show</span> <span class="token-string">"Hello, "</span> + name
+
+<span class="token-keyword">repeat</span> 3 <span class="token-keyword">times</span>
+  <span class="token-keyword">show</span> <span class="token-string">"Learning Eaze is fun!"</span>
+<span class="token-keyword">end</span></code><button class="copy-btn">Copy</button></pre>
+                </section>
+
+                <!-- Setup -->
+                <section id="setup-section">
+                    <h1>Setup & Usage</h1>
+                    <p>Eaze runs on Node.js and includes both a Command Line Interface (CLI) and a Web Playground.</p>
+                    
+                    <h3>Installation</h3>
+                    <p>Clone the repository and install dependencies:</p>
+                    <pre><code>git clone https://github.com/your-repo/eaze.git
+cd eaze
+npm install</code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>Running the REPL</h3>
+                    <p>Start an interactive session where you can type Eaze code line by line:</p>
+                    <pre><code>npm start</code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>Running a File</h3>
+                    <p>Execute an Eaze script file (usually with a <code>.eaze</code> extension):</p>
+                    <pre><code>node cli/index.js examples/fibonacci.eaze</code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>Web Playground</h3>
+                    <p>Open <code>Eaze Playground/kids_code_editor_v5.html</code> in any modern browser to use the visual editor with AI integration.</p>
+                </section>
+
+                <!-- Syntax -->
+                <section id="syntax-section">
+                    <h1>Variables & Syntax</h1>
+                    <p>In Eaze, variables are containers for storing data values. You don't need to declare types (like <code>int</code> or <code>string</code>)—Eaze figures it out for you.</p>
+
+                    <h3>Variable Assignment</h3>
+                    <p>Use the <code>set ... to ...</code> syntax to create or update variables.</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">set</span> score <span class="token-keyword">to</span> <span class="token-number">100</span>
+<span class="token-keyword">set</span> player <span class="token-keyword">to</span> <span class="token-string">"Alice"</span>
+<span class="token-keyword">set</span> is_winner <span class="token-keyword">to</span> 1  <span class="token-comment"># 1 is true, 0 is false</span></code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>Reassignment</h3>
+                    <p>You can change the value of a variable at any time.</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">set</span> x <span class="token-keyword">to</span> <span class="token-number">5</span>
+<span class="token-keyword">set</span> x <span class="token-keyword">to</span> x + <span class="token-number">10</span>
+<span class="token-keyword">show</span> x  <span class="token-comment"># Output: 15</span></code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>Comments</h3>
+                    <p>Use the <code>#</code> symbol to add notes to your code. Everything after <code>#</code> on that line will be ignored by the computer.</p>
+                </section>
+
+                <!-- Data Types -->
+                <section id="types-section">
+                    <h1>Data Types</h1>
+                    <p>Eaze supports three main types of data:</p>
+
+                    <h3>1. Numbers</h3>
+                    <p>Includes both whole numbers (integers) and decimals (floating-point).</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">set</span> age <span class="token-keyword">to</span> <span class="token-number">25</span>
+<span class="token-keyword">set</span> price <span class="token-keyword">to</span> <span class="token-number">19.99</span>
+<span class="token-keyword">set</span> negative <span class="token-keyword">to</span> -<span class="token-number">10</span></code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>2. Strings</h3>
+                    <p>Text values enclosed in single (<code>'</code>) or double (<code>"</code>) quotes.</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">set</span> greeting <span class="token-keyword">to</span> <span class="token-string">"Hello World"</span>
+<span class="token-keyword">set</span> name <span class="token-keyword">to</span> <span class="token-string">'Eaze'</span></code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>3. Arrays</h3>
+                    <p>Ordered lists of values. Arrays are zero-indexed, meaning the first item is at position 0.</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">set</span> fruits <span class="token-keyword">to</span> [<span class="token-string">"Apple"</span>, <span class="token-string">"Banana"</span>, <span class="token-string">"Cherry"</span>]
+<span class="token-keyword">show</span> fruits[<span class="token-number">0</span>]  <span class="token-comment"># Output: Apple</span></code><button class="copy-btn">Copy</button></pre>
+                </section>
+
+                <!-- Operators -->
+                <section id="operators-section">
+                    <h1>Operators</h1>
+                    
+                    <h3>Arithmetic</h3>
+                    <table>
+                        <thead>
+                            <tr><th>Operator</th><th>Meaning</th><th>Example</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>+</code></td><td>Addition</td><td><code>5 + 3</code></td></tr>
+                            <tr><td><code>-</code></td><td>Subtraction</td><td><code>10 - 4</code></td></tr>
+                            <tr><td><code>*</code></td><td>Multiplication</td><td><code>6 * 2</code></td></tr>
+                            <tr><td><code>/</code></td><td>Division</td><td><code>10 / 2</code></td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Comparison</h3>
+                    <table>
+                        <thead>
+                            <tr><th>Operator</th><th>Meaning</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>==</code></td><td>Equal to</td></tr>
+                            <tr><td><code>!=</code></td><td>Not equal to</td></tr>
+                            <tr><td><code><</code></td><td>Less than</td></tr>
+                            <tr><td><code>></code></td><td>Greater than</td></tr>
+                            <tr><td><code><=</code></td><td>Less than or equal</td></tr>
+                            <tr><td><code>>=</code></td><td>Greater than or equal</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Logical</h3>
+                    <p>Eaze uses English keywords for logic:</p>
+                    <ul>
+                        <li><code>and</code>: True if both sides are true.</li>
+                        <li><code>or</code>: True if at least one side is true.</li>
+                        <li><code>not</code>: Flips the truth value.</li>
+                    </ul>
+                </section>
+
+                <!-- Input & Output -->
+                <section id="io-section">
+                    <h1>Input & Output</h1>
+                    
+                    <h3>Output: <code>show</code></h3>
+                    <p>Displays a value to the screen.</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">show</span> <span class="token-string">"Hello"</span>
+<span class="token-keyword">show</span> <span class="token-number">42</span>
+<span class="token-keyword">show</span> <span class="token-number">5</span> + <span class="token-number">5</span></code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>Input: <code>ask ... into</code></h3>
+                    <p>Asks the user a question and stores their answer in a variable.</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">ask</span> <span class="token-string">"What is your name?"</span> <span class="token-keyword">into</span> user_name
+<span class="token-keyword">show</span> <span class="token-string">"Welcome, "</span> + user_name</code><button class="copy-btn">Copy</button></pre>
+                    <div class="callout info">
+                        <strong>Note:</strong> Eaze automatically tries to convert input to a number if it looks like one.
+                    </div>
+                </section>
+
+                <!-- Conditionals -->
+                <section id="conditionals-section">
+                    <h1>Conditionals</h1>
+                    <p>Conditionals allow your program to make decisions.</p>
+
+                    <h3>If Statement</h3>
+                    <pre><code class="language-eaze"><span class="token-keyword">if</span> age >= <span class="token-number">18</span>
+  <span class="token-keyword">show</span> <span class="token-string">"You are an adult."</span>
+<span class="token-keyword">end</span></code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>If-Else Statement</h3>
+                    <pre><code class="language-eaze"><span class="token-keyword">if</span> score >= <span class="token-number">50</span>
+  <span class="token-keyword">show</span> <span class="token-string">"You passed!"</span>
+<span class="token-keyword">else</span>
+  <span class="token-keyword">show</span> <span class="token-string">"Try again."</span>
+<span class="token-keyword">end</span></code><button class="copy-btn">Copy</button></pre>
+                </section>
+
+                <!-- Loops -->
+                <section id="loops-section">
+                    <h1>Loops</h1>
+                    <p>Loops allow you to run the same code multiple times.</p>
+
+                    <h3>Repeat Loop</h3>
+                    <p>Use this when you know exactly how many times you want to repeat.</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">repeat</span> <span class="token-number">5</span> <span class="token-keyword">times</span>
+  <span class="token-keyword">show</span> <span class="token-string">"Counting..."</span>
+<span class="token-keyword">end</span></code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>While Loop</h3>
+                    <p>Use this to repeat code as long as a condition is true.</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">set</span> count <span class="token-keyword">to</span> <span class="token-number">1</span>
+<span class="token-keyword">while</span> count <= <span class="token-number">5</span>
+  <span class="token-keyword">show</span> count
+  <span class="token-keyword">set</span> count <span class="token-keyword">to</span> count + <span class="token-number">1</span>
+<span class="token-keyword">end</span></code><button class="copy-btn">Copy</button></pre>
+                </section>
+
+                <!-- Functions -->
+                <section id="functions-section">
+                    <h1>Functions</h1>
+                    <p>Functions are reusable blocks of code. You define them once and "call" them whenever you need them.</p>
+
+                    <h3>Defining a Function</h3>
+                    <pre><code class="language-eaze"><span class="token-keyword">define</span> greet(name)
+  <span class="token-keyword">show</span> <span class="token-string">"Hello, "</span> + name
+<span class="token-keyword">end</span></code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>Calling a Function</h3>
+                    <p>Use the <code>call</code> keyword followed by the function name.</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">call</span> greet(<span class="token-string">"Alice"</span>)
+<span class="token-keyword">call</span> greet(<span class="token-string">"Bob"</span>)</code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>Returning Values</h3>
+                    <p>Functions can send a value back to where they were called.</p>
+                    <pre><code class="language-eaze"><span class="token-keyword">define</span> square(n)
+  <span class="token-keyword">return</span> n * n
+<span class="token-keyword">end</span>
+
+<span class="token-keyword">set</span> result <span class="token-keyword">to</span> <span class="token-keyword">call</span> square(<span class="token-number">4</span>)
+<span class="token-keyword">show</span> result  <span class="token-comment"># Output: 16</span></code><button class="copy-btn">Copy</button></pre>
+                </section>
+
+                <!-- Arrays -->
+                <section id="arrays-section">
+                    <h1>Arrays</h1>
+                    <p>Arrays are powerful tools for managing lists of data.</p>
+
+                    <h3>Creating Arrays</h3>
+                    <pre><code class="language-eaze"><span class="token-keyword">set</span> numbers <span class="token-keyword">to</span> [<span class="token-number">10</span>, <span class="token-number">20</span>, <span class="token-number">30</span>]
+<span class="token-keyword">set</span> mixed <span class="token-keyword">to</span> [<span class="token-number">1</span>, <span class="token-string">"hello"</span>, [<span class="token-number">1</span>, <span class="token-number">2</span>]]</code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>Accessing and Modifying</h3>
+                    <pre><code class="language-eaze"><span class="token-keyword">set</span> items <span class="token-keyword">to</span> [<span class="token-string">"A"</span>, <span class="token-string">"B"</span>, <span class="token-string">"C"</span>]
+<span class="token-keyword">show</span> items[<span class="token-number">1</span>]  <span class="token-comment"># Output: B</span>
+
+<span class="token-keyword">set</span> items[<span class="token-number">0</span>] <span class="token-keyword">to</span> <span class="token-string">"Z"</span>
+<span class="token-keyword">show</span> items  <span class="token-comment"># Output: ["Z", "B", "C"]</span></code><button class="copy-btn">Copy</button></pre>
+                </section>
+
+                <!-- AI -->
+                <section id="ai-section">
+                    <h1>AI Integration</h1>
+                    <p>Eaze is designed for the modern world, featuring built-in AI assistant capabilities to help you learn faster.</p>
+
+                    <h3>Code Explanation</h3>
+                    <p>The Eaze playground can explain what any piece of code does in plain English. It analyzes the structure of your code and generates a step-by-step walkthrough.</p>
+
+                    <h3>Intelligent Debugging</h3>
+                    <p>Instead of cryptic error messages, Eaze's AI can analyze your errors and suggest specific fixes, teaching you the right way to code as you go.</p>
+
+                    <h3>JavaScript Conversion</h3>
+                    <p>Ready to level up? Eaze can automatically convert your programs into standard JavaScript, helping you bridge the gap between educational coding and professional development.</p>
+                </section>
+
+                <!-- Examples -->
+                <section id="examples-section">
+                    <h1>Sample Programs</h1>
+                    
+                    <h3>Fibonacci Generator</h3>
+                    <pre><code class="language-eaze"><span class="token-comment"># Generate the first N Fibonacci numbers</span>
+<span class="token-keyword">ask</span> <span class="token-string">"How many numbers?"</span> <span class="token-keyword">into</span> n
+<span class="token-keyword">set</span> a <span class="token-keyword">to</span> <span class="token-number">0</span>
+<span class="token-keyword">set</span> b <span class="token-keyword">to</span> <span class="token-number">1</span>
+
+<span class="token-keyword">repeat</span> n <span class="token-keyword">times</span>
+  <span class="token-keyword">show</span> a
+  <span class="token-keyword">set</span> temp <span class="token-keyword">to</span> a + b
+  <span class="token-keyword">set</span> a <span class="token-keyword">to</span> b
+  <span class="token-keyword">set</span> b <span class="token-keyword">to</span> temp
+<span class="token-keyword">end</span></code><button class="copy-btn">Copy</button></pre>
+
+                    <h3>Guessing Game</h3>
+                    <pre><code class="language-eaze"><span class="token-keyword">set</span> secret <span class="token-keyword">to</span> <span class="token-number">42</span>
+<span class="token-keyword">set</span> found <span class="token-keyword">to</span> <span class="token-number">0</span>
+
+<span class="token-keyword">while</span> found == <span class="token-number">0</span>
+  <span class="token-keyword">ask</span> <span class="token-string">"Guess my number:"</span> <span class="token-keyword">into</span> guess
+  <span class="token-keyword">if</span> guess == secret
+    <span class="token-keyword">show</span> <span class="token-string">"Correct!"</span>
+    <span class="token-keyword">set</span> found <span class="token-keyword">to</span> <span class="token-number">1</span>
+  <span class="token-keyword">else</span>
+    <span class="token-keyword">if</span> guess < secret
+      <span class="token-keyword">show</span> <span class="token-string">"Higher..."</span>
+    <span class="token-keyword">else</span>
+      <span class="token-keyword">show</span> <span class="token-string">"Lower..."</span>
+    <span class="token-keyword">end</span>
+  <span class="token-keyword">end</span>
+<span class="token-keyword">end</span></code><button class="copy-btn">Copy</button></pre>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Navigation Logic
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('section');
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menuToggle');
+
+        function showSection(sectionId) {
+            sections.forEach(s => s.classList.remove('active'));
+            const targetSection = document.getElementById(sectionId + '-section');
+            if (targetSection) {
+                targetSection.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+
+            navItems.forEach(item => {
+                if (item.getAttribute('data-section') === sectionId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // Close sidebar on mobile after selection
+            if (window.innerWidth <= 900) {
+                sidebar.classList.remove('open');
+            }
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = item.getAttribute('data-section');
+                showSection(sectionId);
+                history.pushState(null, null, '#' + sectionId);
+            });
+        });
+
+        // Handle Back/Forward buttons and direct links
+        window.addEventListener('popstate', () => {
+            const hash = window.location.hash.replace('#', '') || 'intro';
+            showSection(hash);
+        });
+
+        // Initial Load
+        const initialHash = window.location.hash.replace('#', '') || 'intro';
+        showSection(initialHash);
+
+        // Mobile Menu Toggle
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        // Copy Button Logic
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const code = btn.parentElement.querySelector('code').innerText;
+                navigator.clipboard.writeText(code).then(() => {
+                    const originalText = btn.innerText;
+                    btn.innerText = 'Copied!';
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

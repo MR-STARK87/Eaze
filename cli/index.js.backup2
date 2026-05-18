@@ -214,26 +214,24 @@ function showContinuationPrompt() {
 // EXECUTION & ERROR HANDLING
 // ============================================================================
 async function run(code) {
-  const previousOutputHandler = interpreter.outputHandler;
-  let printedAnyOutput = false;
-
-  interpreter.setOutputHandler((output) => {
-    printedAnyOutput = true;
-    process.stdout.write(
-      `  ${colors.success("→")} ${chalk.white(String(output))}\n`,
-    );
-  });
-
   try {
     const lexer = new Lexer(code);
     const tokens = lexer.tokenize();
     const parser = new Parser(tokens);
     const ast = parser.parse();
+    const result = interpreter.run(ast);
 
-    await interpreter.run(ast);
+    // Handle both sync and async results
+    if (result instanceof Promise) {
+      await result;
+    }
 
-    if (printedAnyOutput) {
-      process.stdout.write("\n");
+    if (interpreter.output.length > 0) {
+      console.log("");
+      interpreter.output.forEach((output) => {
+        console.log(`  ${colors.success("→")} ${chalk.white(String(output))}`);
+      });
+      console.log("");
     }
   } catch (error) {
     if (error instanceof EazeError) {
@@ -247,8 +245,6 @@ async function run(code) {
       );
       console.log("");
     }
-  } finally {
-    interpreter.setOutputHandler(previousOutputHandler);
   }
 }
 
@@ -259,73 +255,22 @@ async function runFile(filename) {
     );
     const code = fs.readFileSync(filename, "utf-8");
 
-    // Check if stdin is a TTY (interactive) or piped
-    const isTTY = process.stdin.isTTY;
+    // Set up input handler for ask commands using readline
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
 
-    if (isTTY) {
-      // === TTY MODE (Interactive) ===
-      // Use readline normally for interactive input
-      const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-      });
-
-      interpreter.setInputHandler((message) => {
-        return new Promise((resolve) => {
-          rl.question(`  ${colors.secondary(String(message))} `, (answer) => {
-            resolve(answer);
-          });
+    interpreter.setInputHandler((message) => {
+      return new Promise((resolve) => {
+        rl.question(`  ${colors.secondary(String(message))} `, (answer) => {
+          resolve(answer);
         });
       });
+    });
 
-      await run(code);
-      rl.close();
-    } else {
-      // === PIPED MODE (Non-interactive) ===
-      // Read all input first, then process line-by-line
-      const inputLines = [];
-      let lineIndex = 0;
-
-      // Collect all stdin data first
-      await new Promise((resolve) => {
-        process.stdin.setEncoding("utf-8");
-        let buffer = "";
-
-        process.stdin.on("data", (chunk) => {
-          buffer += chunk;
-        });
-
-        process.stdin.on("end", () => {
-          // Split by newlines and filter empty lines
-          inputLines.push(
-            ...buffer
-              .split("\n")
-              .filter((line) => line !== undefined && line !== null),
-          );
-          resolve();
-        });
-      });
-
-      // Set input handler that consumes from buffered lines
-      interpreter.setInputHandler((message) => {
-        // Write prompt immediately to stdout
-        process.stdout.write(`  ${colors.secondary(String(message))} `);
-
-        // Return the next buffered line
-        if (lineIndex < inputLines.length) {
-          const line = inputLines[lineIndex];
-          lineIndex++;
-          // Echo the input for clarity
-          process.stdout.write(line + "\n");
-          return line;
-        }
-
-        // If no more input, return empty string
-        return "";
-      });
-
-      await run(code);
-    }
+    await run(code);
+    rl.close();
   } catch (error) {
     console.log(
       `  ${colors.error("✖")} Could not read file ${filename}: ${error.message}\n`,

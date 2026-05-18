@@ -1,0 +1,9 @@
+show "Double quotes test!"
+show 'Single quotes test!'
+
+set greeting to "Hello, World!"
+show greeting
+
+set x to 5
+set y to 3
+show x + y
