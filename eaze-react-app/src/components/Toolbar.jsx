@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useInterpreter } from "../hooks/useInterpreter";
+import { formatEaze } from "../lib/format";
 import Icon from "./Icon";
 
 const ToolButton = ({ icon, label, title, onClick, disabled, tone }) => (
@@ -33,6 +34,8 @@ const Toolbar = () => {
     saveStatus,
     saveActiveFile,
     saveActiveFileAs,
+    settings,
+    updateActiveFileContent,
   } = useAppContext();
   const { runCode } = useInterpreter();
 
@@ -47,18 +50,37 @@ const Toolbar = () => {
     );
   };
 
-  // F5 runs the current file (Errors are shown in the output pane.)
+  /** Re-indent the current buffer (never changes what the code does). */
+  const handleFormat = () => {
+    const file = activeFileRef.current;
+    if (!file) return;
+    const formatted = formatEaze(file.content ?? "", settings?.tabSize || 4);
+    if (formatted !== (file.content ?? "")) updateActiveFileContent(formatted);
+  };
+
+  // F5 runs the current file, Ctrl+Shift+F formats it.
   useEffect(() => {
     const onKeyDown = (event) => {
-      if (event.key !== "F5") return;
-      event.preventDefault();
-      Promise.resolve(runCode(activeFileRef.current?.content ?? "")).catch(
-        () => {},
-      );
+      if (event.key === "F5") {
+        event.preventDefault();
+        Promise.resolve(runCode(activeFileRef.current?.content ?? "")).catch(
+          () => {},
+        );
+        return;
+      }
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "f"
+      ) {
+        event.preventDefault();
+        handleFormat();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [runCode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runCode, settings?.tabSize, updateActiveFileContent]);
 
   const handleRunInCli = () => {
     setActiveTab("cli");
@@ -143,7 +165,8 @@ const Toolbar = () => {
           <ToolButton
             icon="format"
             label="Format"
-            title="Format code (Ctrl+Shift+F)"
+            title="Tidy up indentation (Ctrl+Shift+F)"
+            onClick={handleFormat}
           />
           <ToolButton
             icon="templates"
