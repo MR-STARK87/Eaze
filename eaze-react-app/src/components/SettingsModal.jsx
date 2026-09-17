@@ -10,6 +10,7 @@ const keyboardShortcuts = [
   { key: "Ctrl+Shift+F", desc: "Format Code" },
   { key: "Tab", desc: "Indent" },
   { key: "Ctrl+/", desc: "Comment" },
+  { key: "F5", desc: "Run the current file" },
   { key: "F11", desc: "Fullscreen (Esc to exit)" },
 ];
 

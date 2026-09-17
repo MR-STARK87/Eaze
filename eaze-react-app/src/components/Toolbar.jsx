@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useInterpreter } from "../hooks/useInterpreter";
 import Icon from "./Icon";
@@ -36,9 +36,29 @@ const Toolbar = () => {
   } = useAppContext();
   const { runCode } = useInterpreter();
 
+  // Keep the latest buffer in a ref so the F5 listener is bound only once.
+  const activeFileRef = useRef(activeFile);
+  activeFileRef.current = activeFile;
+
   const handleRun = () => {
-    runCode(activeFile.content);
+    // Errors are surfaced in the output pane; don't leave a floating rejection.
+    Promise.resolve(runCode(activeFileRef.current?.content ?? "")).catch(
+      () => {},
+    );
   };
+
+  // F5 runs the current file (Errors are shown in the output pane.)
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key !== "F5") return;
+      event.preventDefault();
+      Promise.resolve(runCode(activeFileRef.current?.content ?? "")).catch(
+        () => {},
+      );
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [runCode]);
 
   const handleRunInCli = () => {
     setActiveTab("cli");
