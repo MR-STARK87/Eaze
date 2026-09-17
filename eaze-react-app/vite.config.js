@@ -8,4 +8,11 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
+  server: {
+    // Don't watch packaging output: electron-builder drops ~270 MB of binaries
+    // in there, and holding handles on them breaks its final directory rename.
+    watch: {
+      ignored: ["**/release/**", "**/node_modules/**", "**/.git/**"],
+    },
+  },
 })

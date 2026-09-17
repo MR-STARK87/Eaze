@@ -2,6 +2,8 @@
   "name": "eaze-react-app",
   "private": true,
   "version": "0.0.0",
+  "description": "Eaze Playground — a friendly code playground for the Eaze language.",
+  "author": "Eaze",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -9,19 +11,67 @@
     "desktop": "node scripts/dev-desktop.mjs",
     "build": "vite build",
     "app:start": "npm run build && electron .",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:dir": "npm run build && electron-builder --dir",
     "lint": "eslint .",
     "preview": "vite preview"
+  },
+  "build": {
+    "appId": "com.eaze.playground",
+    "productName": "Eaze Playground",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "public/icon.ico",
+      "public/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "icon": "public/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Eaze Playground",
+      "artifactName": "Eaze-Playground-Setup-${version}.${ext}"
+    },
+    "mac": {
+      "icon": "public/icon.png",
+      "category": "public.app-category.education"
+    },
+    "linux": {
+      "icon": "public/icon.png",
+      "category": "Education",
+      "target": [
+        "AppImage"
+      ]
+    }
   },
   "dependencies": {
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
-    "electron": "^33.0.0",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^33.0.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^9.21.0",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.0.0",
