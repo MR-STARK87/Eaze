@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AppProvider, useAppContext } from "./context/AppContext";
+import { isFullscreen, onFullscreenChange } from "./lib/desktop";
+import WindowBar from "./components/WindowBar";
 import Toolbar from "./components/Toolbar";
 import Sidebar from "./components/Sidebar";
 import BlocksBar from "./components/BlocksBar";
@@ -8,17 +10,36 @@ import Console from "./components/Console";
 import SettingsModal from "./components/SettingsModal";
 import TemplatesModal from "./components/TemplatesModal";
 import HelpModal from "./components/HelpModal";
+import AIPanel from "./components/AIPanel";
 import "./App.css";
 
 const AppContent = () => {
   const {
     activeFile,
     updateActiveFileContent,
-    aiPanelOpen,
-    setAiPanelOpen,
     modals,
     setModals,
+    sidebarCollapsed,
+    isDesktop,
   } = useAppContext();
+
+  // Desktop only: hide our window bar while the window is fullscreen.
+  const [fullscreen, setFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (!isDesktop) return undefined;
+    let alive = true;
+    isFullscreen().then((value) => {
+      if (alive) setFullscreen(!!value);
+    });
+    const unsubscribe = onFullscreenChange((value) => setFullscreen(!!value));
+    return () => {
+      alive = false;
+      if (typeof unsubscribe === "function") unsubscribe();
+    };
+  }, [isDesktop]);
+
+  const showWindowBar = isDesktop && !fullscreen;
 
   const handleInsertSnippet = (snippet) => {
     updateActiveFileContent(
@@ -31,71 +52,44 @@ const AppContent = () => {
   };
 
   return (
-    <>
-      <Toolbar />
-      <div className="app-shell">
-        <Sidebar />
-        <main className="main">
-          <BlocksBar onInsert={handleInsertSnippet} />
-          <div className="workspace">
-            <Editor
-              code={activeFile.content}
-              onCodeChange={updateActiveFileContent}
-            />
-            <div className="resizer"></div>
-            <Console />
-          </div>
-        </main>
+    <div className="app-root" data-window-bar={showWindowBar ? "true" : undefined}>
+      {showWindowBar && <WindowBar />}
 
-        <aside className={`ai-panel ${aiPanelOpen ? "open" : ""}`}>
-          <div className="panel-header">
-            <span className="panel-title">Eaze AI Companion</span>
-            <button
-              className="btn"
-              style={{ border: "none" }}
-              onClick={() => setAiPanelOpen(false)}
-            >
-              ✕
-            </button>
+      <div className="frame-wrap">
+        <div
+          className="app-frame"
+          data-sidebar-collapsed={sidebarCollapsed ? "true" : undefined}
+        >
+          <Toolbar />
+          <div className="app-shell">
+            <Sidebar />
+            <main className="main">
+              <BlocksBar onInsert={handleInsertSnippet} />
+              <div className="workspace">
+                <Editor
+                  code={activeFile.content}
+                  onCodeChange={updateActiveFileContent}
+                />
+                <div className="resizer"></div>
+                <Console />
+              </div>
+            </main>
+
+            <AIPanel />
           </div>
-          <div className="ai-chat">
-            <div className="msg msg-bot">
-              Hi! I'm your Eaze coding buddy. Ask me how to make a loop or use a
-              variable!
-            </div>
-          </div>
-          <div className="ai-footer">
-            <input
-              type="text"
-              className="ai-input"
-              placeholder="Ask a question..."
-            />
-            <button
-              className="btn btn-primary"
-              style={{
-                width: "38px",
-                height: "38px",
-                borderRadius: "50%",
-                padding: 0,
-                justifyContent: "center",
-              }}
-            >
-              🚀
-            </button>
-          </div>
-        </aside>
+
+          <SettingsModal
+            isOpen={modals.settings}
+            onClose={() => closeModal("settings")}
+          />
+          <TemplatesModal
+            isOpen={modals.templates}
+            onClose={() => closeModal("templates")}
+          />
+          <HelpModal isOpen={modals.help} onClose={() => closeModal("help")} />
+        </div>
       </div>
-
-      <SettingsModal
-        isOpen={modals.settings}
-        onClose={() => closeModal("settings")}
-      />
-      <TemplatesModal
-        isOpen={modals.templates}
-        onClose={() => closeModal("templates")}
-      />
-      <HelpModal isOpen={modals.help} onClose={() => closeModal("help")} />
-    </>
+    </div>
   );
 };
 

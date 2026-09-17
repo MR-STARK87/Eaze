@@ -1,5 +1,6 @@
 import React from "react";
 import Modal from "./Modal";
+import Icon from "./Icon";
 import { useAppContext } from "../context/AppContext";
 
 const keyboardShortcuts = [
@@ -9,6 +10,7 @@ const keyboardShortcuts = [
   { key: "Ctrl+Shift+F", desc: "Format Code" },
   { key: "Tab", desc: "Indent" },
   { key: "Ctrl+/", desc: "Comment" },
+  { key: "F11", desc: "Fullscreen (Esc to exit)" },
 ];
 
 const SettingsModal = ({ isOpen, onClose }) => {
@@ -47,7 +49,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Settings">
       <div className="settings-section">
-        <div className="settings-title">⚙️ Appearance</div>
+        <div className="settings-title">
+          <Icon name="settings" size={13} />
+          Appearance
+        </div>
         <div className="settings-row">
           <span className="settings-label">Dark Mode</span>
           <div className="settings-value">
@@ -90,7 +95,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
       </div>
 
       <div className="settings-section">
-        <div className="settings-title">📝 Editor</div>
+        <div className="settings-title">
+          <Icon name="pencil" size={13} />
+          Editor
+        </div>
         <div className="settings-row">
           <span className="settings-label">Font Size</span>
           <div className="settings-value">
@@ -182,7 +190,10 @@ const SettingsModal = ({ isOpen, onClose }) => {
       </div>
 
       <div className="settings-section">
-        <div className="settings-title">🚀 Execution</div>
+        <div className="settings-title">
+          <Icon name="play" size={13} />
+          Execution
+        </div>
         <div className="settings-row">
           <span className="settings-label">Live Mode (Auto-run)</span>
           <div className="settings-value">
@@ -201,18 +212,21 @@ const SettingsModal = ({ isOpen, onClose }) => {
           <div className="settings-value">
             <input
               type="number"
+              className="number-input"
               value={settings.traceLimit}
               onChange={(e) =>
                 handleChange("traceLimit", parseInt(e.target.value))
               }
-              style={{ width: "80px" }}
             />
           </div>
         </div>
       </div>
 
       <div className="settings-section">
-        <div className="settings-title">💾 System</div>
+        <div className="settings-title">
+          <Icon name="save" size={13} />
+          System
+        </div>
         <div className="settings-row">
           <span className="settings-label">Auto-Save</span>
           <div className="settings-value">
@@ -227,36 +241,24 @@ const SettingsModal = ({ isOpen, onClose }) => {
           </div>
         </div>
         <div className="settings-row">
-          <button
-            className="btn"
-            style={{ width: "100%", justifyContent: "center" }}
-            onClick={exportData}
-          >
-            📤 Export All Data (.json)
+          <button className="btn btn-block" onClick={exportData}>
+            <Icon name="save-as" size={15} />
+            Export All Data (.json)
           </button>
         </div>
-        <div
-          className="settings-row"
-          style={{ background: "oklch(90% 0.1 20)" }}
-        >
-          <button
-            className="btn"
-            style={{
-              width: "100%",
-              justifyContent: "center",
-              color: "white",
-              background: "oklch(50% 0.2 20)",
-              border: "none",
-            }}
-            onClick={resetAll}
-          >
-            🧨 Reset Everything
+        <div className="settings-row danger-row">
+          <button className="btn btn-danger btn-block" onClick={resetAll}>
+            <Icon name="trash" size={15} />
+            Reset Everything
           </button>
         </div>
       </div>
 
       <div className="settings-section">
-        <div className="settings-title">⌨️ Keyboard Shortcuts</div>
+        <div className="settings-title">
+          <Icon name="terminal" size={13} />
+          Keyboard Shortcuts
+        </div>
         <div className="shortcuts-grid">
           {keyboardShortcuts.map((s) => (
             <div key={s.key} className="shortcut-item">

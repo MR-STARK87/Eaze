@@ -1,27 +1,31 @@
 import React, { useRef, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { useInterpreter } from "../hooks/useInterpreter";
+import Icon from "./Icon";
 
-const HIGHLIGHT_KEYWORDS = new Set([
-  "say",
-  "set",
-  "to",
-  "show",
-  "if",
-  "else",
-  "repeat",
-  "while",
-  "define",
-  "call",
-  "times",
-  "end",
-  "ask",
-  "into",
-  "return",
-  "and",
-  "or",
-  "not",
-]);
+/** Every keyword family carries its own colour, matching the block chips. */
+const KEYWORD_CLASS = {
+  say: "kw-output",
+  show: "kw-output",
+  set: "kw-assign",
+  to: "kw-assign",
+  ask: "kw-input",
+  into: "kw-input",
+  if: "kw-branch",
+  else: "kw-branch",
+  and: "kw-branch",
+  or: "kw-branch",
+  not: "kw-branch",
+  repeat: "kw-loop",
+  while: "kw-loop",
+  times: "kw-loop",
+  call: "kw-loop",
+  define: "kw-block",
+  end: "kw-block",
+  return: "kw-std",
+};
+
+const HIGHLIGHT_KEYWORDS = new Set(Object.keys(KEYWORD_CLASS));
 
 function escapeHtml(text) {
   return text
@@ -85,7 +89,10 @@ function highlightEaze(code) {
       while (i < code.length && /[a-zA-Z0-9_]/.test(code[i])) i++;
       const word = code.slice(start, i);
       if (HIGHLIGHT_KEYWORDS.has(word)) {
-        out += `<span class="token keyword">${escapeHtml(word)}</span>`;
+        out += `<span class="token ${KEYWORD_CLASS[word]}">${escapeHtml(word)}</span>`;
+      } else if (code[i] === "(") {
+        // something(...) — a call, like str(attempts)
+        out += `<span class="token fn">${escapeHtml(word)}</span>`;
       } else {
         out += escapeHtml(word);
       }
@@ -100,8 +107,20 @@ function highlightEaze(code) {
 }
 
 const Editor = ({ code, onCodeChange }) => {
-  const { settings, activeFile, undo, redo } = useAppContext();
+  const { settings, activeFile, undo, redo, files, addFile } = useAppContext();
   const { runCode } = useInterpreter();
+
+  /** `+` on the tab strip: create a fresh, unused scratch file. */
+  const handleNewFile = () => {
+    const taken = new Set((files || []).map((f) => f.name.toLowerCase()));
+    let name = "untitled.eaze";
+    let n = 2;
+    while (taken.has(name.toLowerCase())) {
+      name = `untitled-${n}.eaze`;
+      n += 1;
+    }
+    addFile(name, "");
+  };
   const textareaRef = useRef(null);
   const preRef = useRef(null);
   const gutterRef = useRef(null);
@@ -209,27 +228,40 @@ const Editor = ({ code, onCodeChange }) => {
   const lineCount = code.split("\n").length;
   const highlighted = highlightEaze(code + (code.endsWith("\n") ? " " : ""));
 
+  // Gutter and code share one line height so the numbers stay glued to their lines.
+  const lineHeight = Math.round(settings.fontSize * 1.65);
+
   const editorStyles = {
     fontSize: settings.fontSize + "px",
     fontFamily: settings.fontFamily + ", monospace",
     whiteSpace: settings.wordWrap ? "pre-wrap" : "pre",
+    lineHeight: lineHeight + "px",
   };
 
   return (
     <div className="panel editor-panel">
-      <div className="panel-header">
-        <span className="panel-title">{activeFile?.name || "main.eaze"}</span>
-        <span style={{ fontSize: "10px", color: "var(--muted)" }}>
+      <div className="editor-tabs">
+        <div className="editor-tab active" title={activeFile?.path || activeFile?.name}>
+          <Icon name="file-code" size={15} className="editor-tab-icon" />
+          <span className="editor-tab-name">{activeFile?.name || "untitled.eaze"}</span>
+        </div>
+        <button
+          type="button"
+          className="editor-tab-add"
+          onClick={handleNewFile}
+          title="New file"
+        >
+          <Icon name="plus" size={16} />
+        </button>
+        <span className="editor-meta">
           Ln {cursorPos.line}, Col {cursorPos.col}
         </span>
       </div>
-      <div className="editor-area">
+      <div className="editor-area" style={{ "--editor-line-height": `${lineHeight}px` }}>
         {settings.showLineNumbers && (
           <div className="gutter" ref={gutterRef}>
             {Array.from({ length: lineCount }, (_, i) => (
-              <div key={i} style={{ height: "24px" }}>
-                {i + 1}
-              </div>
+              <div key={i}>{i + 1}</div>
             ))}
           </div>
         )}

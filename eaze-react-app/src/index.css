@@ -1,82 +1,280 @@
+/* =============================================================
+   Eaze Playground — design tokens
+   Palette, radii and syntax colours are derived from the
+   light/dark reference boards in the project root.
+   ============================================================= */
+
 :root {
-    /* Theme Variables */
-    --bg: oklch(98% 0.01 280);
-    --surface: oklch(100% 0 0);
-    --fg: oklch(25% 0.02 280);
-    --muted: oklch(60% 0.02 280);
-    --border: oklch(92% 0.01 280);
+    /* --- surfaces (light) --- */
+    --bg: #eceef2;            /* page behind the app frame */
+    --surface: #ffffff;       /* cards, panels, toolbar */
+    --surface-2: #f7f8fa;     /* sidebar, inset rows */
+    --surface-3: #eef0f4;     /* hover / raised */
+    --inset: #fbfcfd;         /* code + output canvas */
+    --scrim: rgba(20, 27, 38, 0.34);
 
-    --lavender: oklch(88% 0.08 300);
-    --mint: oklch(92% 0.08 160);
-    --peach: oklch(90% 0.08 40);
-    --sky: oklch(90% 0.06 220);
-    --lemon: oklch(95% 0.08 100);
-    --pink: oklch(92% 0.08 0);
+    --fg: #232c3d;
+    --fg-strong: #131b29;     /* was --accent-fg in the old theme */
+    --accent-fg: #131b29;
+    --muted: #8794a6;
+    --muted-strong: #5d6b7d;
 
-    --accent: var(--lavender);
-    --accent-fg: oklch(40% 0.15 300);
+    --border: #e6e9ee;
+    --border-strong: #d9dee6;
 
-    --font-ui: "DM Sans", system-ui, sans-serif;
-    --font-mono: "JetBrains Mono", monospace;
+    --accent: #fb6b6c;        /* coral — Run button, active tabs */
+    --accent-hover: #f4555a;
+    --accent-soft: #fdecec;
+    --accent-strong: #c53440;
 
+    --row-active: #fdeaea;
+    --row-active-fg: #232c3d;
+
+    /* --- semantic --- */
+    --ok: #12855c;
+    --warn: #a8630a;
+    --err: #d0353f;
+
+    /* --- shadows --- */
+    --shadow-sm: 0 1px 2px rgba(19, 27, 41, 0.05);
+    --shadow-md: 0 12px 32px rgba(19, 27, 41, 0.14);
+    --shadow-lg: 0 24px 60px rgba(19, 27, 41, 0.2);
+
+    /* --- radii --- */
+    --radius-xs: 6px;
     --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
 
-    --shadow-sm: 0 2px 8px oklch(0% 0 0 / 0.04);
-    --shadow-md: 0 4px 16px oklch(0% 0 0 / 0.08);
+    /* --- metrics --- */
+    --font-ui: "DM Sans", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", monospace;
 
-    /* Syntax */
-    --syn-keyword: oklch(65% 0.15 300);
-    --syn-string: oklch(70% 0.15 160);
-    --syn-number: oklch(70% 0.15 40);
-    --syn-comment: var(--muted);
-    --syn-function: oklch(65% 0.12 220);
+    --sidebar-width: 258px;
+    --sidebar-collapsed-width: 58px;
+    --toolbar-height: 68px;
+    --blocks-height: 62px;
+    /* must match WINDOW_BAR_HEIGHT in electron/main.cjs */
+    --window-bar-height: 40px;
 
-    --sidebar-width: 240px;
-    --sidebar-collapsed-width: 64px;
-
-    --density-padding: 12px;
+    --density-padding: 14px;
     --density-gap: 12px;
 
-    /* CLI Colors */
-    --cli-primary: #6a99ff;
-    --cli-secondary: #ff9f40;
-    --cli-success: #4caf50;
-    --cli-error: #f44336;
-    --cli-warning: #ffc107;
-    --cli-accent: #9c27b0;
-    --cli-muted: #9e9e9e;
-    --cli-highlight: #ff5722;
-}
+    /* --- language block tones (chips, badges, editor keywords) --- */
+    --c-red: #d8394f;
+    --c-blue: #2a55d8;
+    --c-purple: #7a3ce0;
+    --c-green: #0f8558;
+    --c-orange: #b04a12;
+    --c-amber: #9c6208;
+    --c-indigo: #5a3ce0;
+    --c-teal: #0d6b7c;
+    --c-azure: #1a4fd0;
 
-[data-density="compact"] {
-    --density-padding: 4px;
-    --density-gap: 4px;
+    /* --- editor syntax --- */
+    --syn-output: #d81b60;    /* say */
+    --syn-assign: #2050d8;    /* set */
+    --syn-input: #2050d8;     /* ask / into */
+    --syn-branch: #d81b60;    /* if / else */
+    --syn-loop: #6d3fe0;      /* repeat / while / times */
+    --syn-block: #0d6b7c;     /* define / end */
+    --syn-fn: #7a3ce0;        /* function calls */
+    --syn-std: #1a4fd0;       /* return */
+    --syn-string: #12815a;
+    --syn-number: #b45309;
+    --syn-comment: #96a2b3;
+    --syn-plain: var(--fg);
+
+    /* --- CLI colours (terminal stays dark in both themes) --- */
+    --cli-bg: #0f141b;
+    --cli-fg: #d6dde7;
+    --cli-primary: #79a6ff;
+    --cli-secondary: #ffa34d;
+    --cli-success: #4fd18b;
+    --cli-error: #ff6b6b;
+    --cli-warning: #ffd166;
+    --cli-accent: #c79bff;
+    --cli-muted: #7b8695;
 }
 
 [data-theme="dark"] {
-    --bg: oklch(18% 0.01 280);
-    --surface: oklch(22% 0.02 280);
-    --fg: oklch(95% 0.01 280);
-    --muted: oklch(60% 0.02 280);
-    --border: oklch(30% 0.02 280);
-    --accent-fg: oklch(90% 0.05 300);
-    --shadow-sm: 0 2px 8px oklch(0% 0 0 / 0.2);
+    --bg: #0b0f16;
+    --surface: #141a23;
+    --surface-2: #171e28;
+    --surface-3: #1e2733;
+    --inset: #111720;
+    --scrim: rgba(0, 0, 0, 0.55);
+
+    --fg: #dde4ee;
+    --fg-strong: #f3f6fa;
+    --accent-fg: #f3f6fa;
+    --muted: #7f8b9d;
+    --muted-strong: #9aa6b7;
+
+    --border: #212833;
+    --border-strong: #2c3644;
+
+    --accent: #fd6469;
+    --accent-hover: #ff7c81;
+    --accent-soft: #2e2126;
+    --accent-strong: #ff9aa0;
+
+    --row-active: #243040;
+    --row-active-fg: #eaf0f8;
+
+    --ok: #4fd18b;
+    --warn: #e8b04b;
+    --err: #ff6b6b;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 14px 34px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 28px 70px rgba(0, 0, 0, 0.55);
+
+    --c-red: #ff7d8e;
+    --c-blue: #7ba2ff;
+    --c-purple: #bd93ff;
+    --c-green: #4bd6a0;
+    --c-orange: #ff9f63;
+    --c-amber: #e8b04b;
+    --c-indigo: #a294ff;
+    --c-teal: #43c9d9;
+    --c-azure: #6ea8ff;
+
+    --syn-output: #ff7aa8;
+    --syn-assign: #7aa2ff;
+    --syn-input: #7aa2ff;
+    --syn-branch: #ff7aa8;
+    --syn-loop: #b493ff;
+    --syn-block: #3fc9d8;
+    --syn-fn: #c4a7ff;
+    --syn-std: #6ea8ff;
+    --syn-string: #46d69d;
+    --syn-number: #ffab5c;
+    --syn-comment: #6f7b8c;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font-ui); background-color: var(--bg); color: var(--fg); height: 100vh; overflow: hidden; }
+[data-density="compact"] {
+    --density-padding: 6px;
+    --density-gap: 6px;
+    --toolbar-height: 60px;
+    --blocks-height: 54px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--fg);
+    height: 100vh;
+    overflow: hidden;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
 
 #root {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
-/* Syntax Tokens */
-.token.keyword { color: var(--syn-keyword); font-weight: 800; }
-.token.string  { color: var(--syn-string); }
-.token.number  { color: var(--syn-number); }
-.token.comment { color: var(--syn-comment); }
-.token.fn      { color: var(--syn-function); font-weight: 700; }
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+    color: inherit;
+}
+
+:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--accent) 70%, transparent);
+    outline-offset: 2px;
+}
+
+/* --- thin, themed scrollbars --- */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--muted) 45%, transparent) transparent;
+}
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--muted) 40%, transparent);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--muted) 65%, transparent);
+    background-clip: content-box;
+}
+
+/* =============================================================
+   Syntax tokens — each keyword family keeps its block colour
+   ============================================================= */
+.token {
+    color: var(--syn-plain);
+}
+.token.kw-output {
+    color: var(--syn-output);
+    font-weight: 700;
+}
+.token.kw-assign {
+    color: var(--syn-assign);
+    font-weight: 700;
+}
+.token.kw-input {
+    color: var(--syn-input);
+    font-weight: 700;
+}
+.token.kw-branch {
+    color: var(--syn-branch);
+    font-weight: 700;
+}
+.token.kw-loop {
+    color: var(--syn-loop);
+    font-weight: 700;
+}
+.token.kw-block {
+    color: var(--syn-block);
+    font-weight: 700;
+}
+.token.kw-std {
+    color: var(--syn-std);
+    font-weight: 700;
+}
+.token.keyword {
+    color: var(--syn-loop);
+    font-weight: 700;
+}
+.token.fn {
+    color: var(--syn-fn);
+    font-weight: 600;
+}
+.token.string {
+    color: var(--syn-string);
+}
+.token.number {
+    color: var(--syn-number);
+}
+.token.comment {
+    color: var(--syn-comment);
+    font-style: italic;
+}
