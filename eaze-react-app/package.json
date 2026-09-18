@@ -1,7 +1,7 @@
 {
   "name": "eaze-react-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Eaze Playground — a friendly code playground for the Eaze language.",
   "author": "Eaze",
   "type": "module",
@@ -38,6 +38,12 @@
           "arch": [
             "x64"
           ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
@@ -48,6 +54,9 @@
       "createDesktopShortcut": true,
       "shortcutName": "Eaze Playground",
       "artifactName": "Eaze-Playground-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Eaze-Playground-Portable-${version}.${ext}"
     },
     "mac": {
       "icon": "public/icon.png",
